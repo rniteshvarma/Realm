@@ -1,0 +1,178 @@
+/* ═══════════════════════════════════════════════════════
+   GLOBALS — THE VOID
+   Design system CSS custom properties + full reset
+═══════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+/* ── Color Tokens — DARK HEAVEN PALETTE ───────────── */
+:root {
+  --void:         #000000;   /* pure black */
+  --heaven-deep:  #0D1B2A;   /* prussian blue — new dark bg */
+  --plasma:       #7B2FBE;   /* electric purple */
+  --neural:       #00F5FF;   /* neon teal */
+  --sacred:       #C9A84C;   /* gold — replaces burn red */
+  --ghost:        #F0F0F0;   /* near-white */
+  --haze:         #1A1A2E;   /* dark blue-black */
+  --aurora-1:     #B44FE8;   /* violet aurora */
+  --aurora-2:     #4FABE8;   /* ice blue aurora */
+  --biolum:       #00FF9D;   /* bioluminescent green — accent */
+
+  /* Derived */
+  --plasma-dim:   rgba(123, 47, 190, 0.3);
+  --neural-dim:   rgba(0, 245, 255, 0.2);
+  --neural-glow:  rgba(0, 245, 255, 0.6);
+  --sacred-dim:   rgba(201, 168, 76, 0.25);
+  --sacred-glow:  rgba(201, 168, 76, 0.6);
+  --ghost-dim:    rgba(240, 240, 240, 0.6);
+  --biolum-dim:   rgba(0, 255, 157, 0.2);
+  --aurora-1-dim: rgba(180, 79, 232, 0.3);
+  --aurora-2-dim: rgba(79, 171, 232, 0.3);
+
+  /* Typography */
+  --font-display: 'Bebas Neue', 'Space Grotesk', sans-serif;
+  --font-body:    'Space Grotesk', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+
+  /* Motion */
+  --ease-cinematic: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-expo:  cubic-bezier(0.19, 1, 0.22, 1);
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+  --space-2xl: 8rem;
+}
+
+/* ── Hard Reset ────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  background: var(--void);
+  color: var(--ghost);
+}
+
+body {
+  background: var(--void);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── CRITICAL: Hide default cursor globally ────────── */
+*, *::before, *::after {
+  cursor: none !important;
+}
+
+/* ── Root ──────────────────────────────────────────── */
+#root {
+  width: 100vw;
+  position: relative;
+  background: var(--void);
+}
+
+/* ── Custom Scrollbar (for any overflow areas) ─────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--plasma);
+  border-radius: 2px;
+}
+
+/* ── Utility Classes ───────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Layering ──────────────────────────────────────── */
+.layer-base    { z-index: 0; }
+.layer-bg      { z-index: 1; }
+.layer-content { z-index: 10; }
+.layer-overlay { z-index: 50; }
+.layer-cursor  { z-index: 9999; }
+
+/* ── Global canvas rule ────────────────────────────── */
+canvas {
+  display: block;
+}
+
+/* ── Reduced Motion ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Audio Visualizer Button ───────────────────────── */
+.audio-visualizer-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid rgba(240, 240, 240, 0.12);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: rgba(240, 240, 240, 0.4);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: border-color 0.3s, color 0.3s;
+  backdrop-filter: blur(8px);
+}
+
+.audio-visualizer-btn.active {
+  border-color: rgba(0, 245, 255, 0.35);
+  color: var(--neural);
+}
+
+.audio-visualizer-btn:hover {
+  border-color: rgba(0, 245, 255, 0.5);
+  color: var(--neural);
+}
+
+.audio-visualizer-canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.audio-visualizer-label {
+  min-width: 32px;
+}
+
+/* ── Warp overlay (constellation nav) ──────────────── */
+.warp-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 990;
+  background: radial-gradient(ellipse at center, rgba(201,168,76,0.05) 0%, transparent 70%);
+  opacity: 0;
+}

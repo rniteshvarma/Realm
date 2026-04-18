@@ -1,0 +1,173 @@
+.manifesto-realm {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: var(--void);
+}
+
+.manifesto-canvas-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none; /* Let pointer events pass to content */
+}
+
+.manifesto-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; /* Let canvas get mouse events, enable on children */
+}
+
+/* ── Kinetic Headline ──────────────────────────────── * /
+/* Setup for the 4 word headline behaviors specified in brief */
+
+.manifesto-headline {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 10rem);
+  line-height: 0.9;
+  text-align: center;
+  pointer-events: auto; /* Enable hover */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  cursor: none;
+}
+
+.word-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.4em; /* Tightened gap now that letter-spacing handles layout */
+}
+
+.word {
+  position: relative;
+  display: inline-block;
+  transition: all 0.6s var(--ease-cinematic);
+  transform-origin: center center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Word 1: Weight morphing */
+.word-1 {
+  font-weight: 300;
+}
+.word-1:hover {
+  font-weight: 700;
+  color: var(--ghost);
+  text-shadow: 0 0 20px var(--ghost-dim);
+}
+
+/* Word 2: Stretch */
+.word-2 {
+  font-stretch: 100%;
+}
+.word-2:hover {
+  /* Use letter-spacing instead of scaleX for layout-safe kinetic stretching */
+  letter-spacing: 0.4em;
+  color: var(--plasma);
+  text-shadow: 0 0 20px var(--plasma-dim);
+  transition: all 0.6s var(--ease-spring);
+}
+
+/* Word 3: Shatter (CSS clip-path or SVG via React) */
+.word-3.shattered span {
+  display: inline-block;
+  transition: transform 0.6s var(--ease-spring), opacity 0.6s;
+}
+
+.word-3:hover span {
+  opacity: 0.5;
+  color: var(--sacred);
+}
+
+/* Word 4: Invert and glow */
+.word-4 {
+  color: var(--ghost);
+}
+.word-4:hover {
+  color: var(--void);
+  background: var(--ghost);
+  padding: 0 0.1em;
+  border-radius: 4px;
+  box-shadow: 0 0 30px var(--ghost);
+  mix-blend-mode: exclusion;
+}
+
+/* Scroll hint */
+.scroll-hint {
+  position: absolute;
+  bottom: var(--space-xl);
+  height: 40px;
+  width: 2px;
+  background: rgba(240, 240, 240, 0.2);
+  pointer-events: none;
+}
+
+.waveform-line {
+  width: 100%;
+  height: 100%;
+  background: var(--ghost);
+  transform-origin: top;
+  animation: scrollPulse 2s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+}
+
+@keyframes scrollPulse {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  50.1% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* ── Metatron's Cube Watermark ────────────────── */
+.manifesto-metatron {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.05;
+}
+
+.metatron-svg {
+  width: min(70vw, 70vh);
+  height: min(70vw, 70vh);
+  stroke: var(--sacred);
+  stroke-width: 0.5;
+  fill: none;
+  animation: metatronSpin 60s linear infinite;
+}
+
+@keyframes metatronSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Egg 1: Ghost Word ───────────────────────── */
+.manifesto-ghost-word {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 12vw, 14rem);
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(201, 168, 76, 0.2);
+  pointer-events: auto;
+  user-select: none;
+  letter-spacing: 0.08em;
+  z-index: 1;
+  opacity: 0;
+  transition: -webkit-text-stroke-color 0.3s;
+}
+
+.manifesto-ghost-word:hover {
+  -webkit-text-stroke-color: rgba(201, 168, 76, 0.5);
+}

@@ -1,0 +1,116 @@
+.arsenal-container {
+  width: 100vw;
+  height: 100vh;
+  background: var(--haze);
+  overflow: hidden;
+  position: relative;
+  /* Perspective trick for depth fog */
+  perspective: 1000px;
+}
+
+.arsenal-tunnel {
+  height: 100vh;
+  width: 400vw; /* 4 segments, 100vw each */
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.tunnel-segment {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.skill-canvas {
+  width: 600px;
+  height: 600px;
+  max-width: 90vw;
+  max-height: 90vh;
+  pointer-events: none; /* Let canvas ignore cursor if needed, or enable for 3D interactions */
+  transition: transform 0.6s var(--ease-spring);
+}
+
+.tunnel-segment:hover .skill-canvas {
+  transform: scale(1.1);
+}
+
+.skill-title {
+  position: absolute;
+  top: 15%;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 6rem);
+  letter-spacing: 0.1em;
+  opacity: 0.1;
+  text-align: center;
+  width: 100%;
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease-cinematic), filter 0.6s;
+  mix-blend-mode: overlay;
+}
+
+.tunnel-segment:hover .skill-title {
+  opacity: 0.8;
+  filter: blur(2px);
+}
+
+.skill-tooltip {
+  position: absolute;
+  bottom: 20%;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s var(--ease-spring);
+  color: var(--ghost);
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+.tunnel-segment:hover .skill-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Base level fog simulation with CSS gradients */
+.arsenal-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 30%, var(--haze) 100%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Bioluminescent vein patterns on tunnel walls ── */
+.arsenal-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 48%, rgba(0, 255, 157, 0.04) 50%, transparent 52%),
+    linear-gradient(90deg, transparent 28%, rgba(201, 168, 76, 0.03) 30%, transparent 32%),
+    linear-gradient(90deg, transparent 68%, rgba(0, 245, 255, 0.04) 70%, transparent 72%);
+  pointer-events: none;
+  z-index: 2;
+  animation: veinPulse 6s ease-in-out infinite;
+}
+
+@keyframes veinPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ── Skill canvas root ─────────────────────────── */
+.arsenal-canvas-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+

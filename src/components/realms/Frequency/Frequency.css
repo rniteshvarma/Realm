@@ -1,0 +1,133 @@
+.frequency-realm {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: #050510;
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.freq-header {
+  position: absolute;
+  top: 2.5rem;
+  left: 3rem;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.freq-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  color: var(--neural);
+  opacity: 0.7;
+  margin-bottom: 0.3rem;
+}
+
+.freq-sub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  color: var(--ghost);
+  opacity: 0.35;
+}
+
+/* ── Segment progress nodes ─────────────────────────── */
+.freq-progress {
+  position: absolute;
+  top: 50%;
+  left: 2rem;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  pointer-events: none;
+}
+
+.freq-progress-node {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  opacity: 0.2;
+  transition: all 0.5s var(--ease-cinematic);
+}
+
+.freq-progress-node::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ghost);
+  flex-shrink: 0;
+  transition: all 0.5s;
+}
+
+.freq-progress-node.done {
+  opacity: 0.45;
+  color: var(--sacred);
+}
+.freq-progress-node.done::before {
+  background: var(--sacred);
+  box-shadow: 0 0 6px var(--sacred-glow);
+}
+
+.freq-progress-node.active {
+  opacity: 1;
+  color: var(--neural);
+}
+.freq-progress-node.active::before {
+  background: var(--neural);
+  box-shadow: 0 0 8px var(--neural-glow);
+  width: 7px;
+  height: 7px;
+}
+
+/* ── Resonance button ───────────────────────────────── */
+.resonance-btn {
+  position: absolute;
+  bottom: 3rem;
+  right: 3rem;
+  z-index: 10;
+  background: transparent;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  color: rgba(240, 240, 240, 0.5);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  padding: 0.6rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.4s var(--ease-cinematic);
+  backdrop-filter: blur(8px);
+  border-radius: 2px;
+}
+
+.resonance-btn:hover {
+  border-color: var(--neural);
+  color: var(--neural);
+  text-shadow: 0 0 8px var(--neural-glow);
+}
+
+.resonance-btn.active {
+  border-color: var(--sacred);
+  color: var(--sacred);
+  text-shadow: 0 0 8px var(--sacred-glow);
+  animation: resonancePulse 1s ease-in-out infinite;
+}
+
+.resonance-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+@keyframes resonancePulse {
+  0%, 100% { box-shadow: 0 0 5px var(--sacred-glow); }
+  50% { box-shadow: 0 0 20px var(--sacred-glow); }
+}

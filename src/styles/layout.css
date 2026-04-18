@@ -1,0 +1,77 @@
+/* ── Structure ──────────────────────────────────────── */
+.experience-container {
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.realm-section {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+/* Realms 6 (Frequency) is taller — 5 segments worth */
+.realm-6 {
+  height: 600vh;
+}
+
+/* Realm 7 (Myth Engine) — horizontal, pinned */
+.realm-7 {
+  height: 500vh;
+}
+
+/* ── Realm 2 Specific Wrapper ──────────────────────── */
+.arsenal-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.arsenal-tunnel {
+  width: 400vw;
+  height: 100vh;
+  display: flex;
+  will-change: transform;
+}
+
+/* ── Persistent UI ──────────────────────────────────── */
+.persistent-ui {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+/* ── Constellation Nav ──────────────────────────────── */
+.constellation-nav {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 980;
+  cursor: none;
+  opacity: 0.85;
+  transition: opacity 0.3s;
+}
+
+.constellation-nav:hover {
+  opacity: 1;
+}
+
+.constellation-tooltip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 985;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: var(--sacred);
+  text-shadow: 0 0 8px var(--sacred-glow);
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+

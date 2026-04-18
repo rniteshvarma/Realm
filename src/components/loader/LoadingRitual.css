@@ -1,0 +1,189 @@
+.loading-ritual {
+  position: fixed;
+  inset: 0;
+  background-color: var(--void);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--ghost);
+}
+
+.loading-ritual__content {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.click-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+/* ── Sigil SVG ────────────────────────────────────── */
+.loading-ritual__sigil {
+  width: 140px;
+  height: 140px;
+  margin-bottom: var(--space-xl);
+}
+
+.sigil-svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--ghost);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 10px rgba(240, 240, 240, 0.3));
+  animation: sigilPulse 4s infinite ease-in-out;
+}
+
+/* Gold outer ring */
+.sigil-ring-outer {
+  stroke: var(--sacred);
+  stroke-width: 0.8;
+  opacity: 0;
+  animation: ringFadeIn 2.5s forwards 0.5s ease-out;
+  filter: drop-shadow(0 0 6px var(--sacred-glow));
+}
+
+.sigil-path {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: drawSigil 3s forwards cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.sigil-core {
+  fill: var(--sacred);
+  opacity: 0;
+  animation: glowCore 2s forwards 1.5s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ── REALM Wordmark ───────────────────────────────── */
+.loading-ritual__wordmark {
+  display: flex;
+  gap: 0.08em;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.5em;
+  color: var(--sacred);
+  margin-top: var(--space-md);
+  text-shadow: 0 0 20px var(--sacred-glow);
+}
+
+.wordmark-letter {
+  opacity: 0;
+  display: inline-block;
+}
+
+.wordmark-completion {
+  position: absolute;
+  bottom: 14%;
+  font-size: 0.7rem;
+  letter-spacing: 0.8em;
+  opacity: 0.5;
+  margin-top: 0;
+  animation: fadeIn 1s forwards;
+}
+.wordmark-completion .wordmark-letter {
+  opacity: 1;
+}
+
+/* ── Counter ──────────────────────────────────────── */
+.loading-ritual__counter {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  opacity: 0.8;
+}
+
+/* ── Completion State ─────────────────────────────── */
+.loading-ritual__completion {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-ritual__enter {
+  position: absolute;
+  bottom: 20%;
+  background: transparent;
+  border: none;
+  color: var(--ghost);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  letter-spacing: 0.3em;
+  cursor: none;
+  opacity: 0;
+  animation: fadeIn 2s forwards 3s;
+  padding: var(--space-sm) var(--space-md);
+  transition: text-shadow 0.3s, color 0.3s;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.loading-ritual__enter:hover {
+  color: var(--sacred);
+  text-shadow: 0 0 10px var(--sacred-glow);
+}
+
+/* ── Egg 5: Ghost Sigil ───────────────────────────── */
+.loading-ritual__ghost-sigil {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  opacity: 0;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.sigil-ghost {
+  stroke: var(--sacred);
+  filter: drop-shadow(0 0 12px var(--sacred-glow));
+  animation: none !important;
+}
+
+/* ── Sound Hint ───────────────────────────────────── */
+.loading-ritual__sound-hint {
+  position: absolute;
+  bottom: var(--space-lg);
+  left: var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* ── Animations ───────────────────────────────────── */
+@keyframes drawSigil {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes glowCore {
+  to { opacity: 1; filter: drop-shadow(0 0 8px var(--sacred)); }
+}
+
+@keyframes sigilPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes ringFadeIn {
+  to { opacity: 0.7; }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}

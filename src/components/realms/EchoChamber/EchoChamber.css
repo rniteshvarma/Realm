@@ -1,0 +1,54 @@
+.echo-chamber {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: var(--heaven-deep);
+  overflow: hidden;
+}
+
+.echo-header {
+  position: absolute;
+  top: 2.5rem;
+  left: 3rem;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.echo-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  color: var(--sacred);
+  opacity: 0.7;
+  margin-bottom: 0.3rem;
+}
+
+.echo-sub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  color: var(--ghost);
+  opacity: 0.35;
+}
+
+.echo-hint {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  color: var(--ghost);
+  opacity: 0.3;
+  animation: breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.5; }
+}

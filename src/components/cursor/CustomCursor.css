@@ -1,0 +1,100 @@
+/* ── Custom Cursor ─────────────────────────────────── */
+
+.cursor-orb,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+}
+
+/* ── Orb (8px, tracks exactly) ─────────────────────── */
+.cursor-orb {
+  width: 8px;
+  height: 8px;
+  background: var(--ghost);
+  border-radius: 50%;
+  margin-left: -4px;
+  margin-top: -4px;
+  transition: opacity 0.3s var(--ease-cinematic),
+              transform 0.1s;
+  box-shadow: 0 0 10px var(--neural-glow), 0 0 20px var(--neural-dim);
+}
+
+.cursor-orb--hover-link {
+  opacity: 0;
+}
+
+.cursor-orb--hover-drag {
+  border-radius: 2px;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  clip-path: polygon(
+    50% 0%, 55% 40%, 100% 50%,
+    55% 60%, 50% 100%, 45% 60%,
+    0% 50%, 45% 40%
+  );
+  background: var(--neural);
+}
+
+/* ── Ring (40px trailing) ──────────────────────────── */
+.cursor-ring {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(240, 240, 240, 0.5);
+  border-radius: 50%;
+  margin-left: -20px;
+  margin-top: -20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.5s var(--ease-cinematic),
+              height 0.5s var(--ease-cinematic),
+              margin 0.5s var(--ease-cinematic),
+              border-color 0.4s,
+              background 0.4s;
+}
+
+.cursor-ring--hover-link {
+  width: 80px;
+  height: 80px;
+  margin-left: -40px;
+  margin-top: -40px;
+  background: rgba(240, 240, 240, 0.06);
+  border-color: rgba(240, 240, 240, 0.8);
+  backdrop-filter: blur(2px);
+}
+
+.cursor-ring--hover-drag {
+  border-color: var(--neural);
+  box-shadow: 0 0 15px var(--neural-dim);
+}
+
+.cursor-ring--active {
+  width: 12px !important;
+  height: 12px !important;
+  margin-left: -6px !important;
+  margin-top: -6px !important;
+  background: var(--ghost);
+}
+
+/* ── Ring label text ────────────────────────────────── */
+.cursor-ring__label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--ghost);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-cinematic);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.cursor-ring--hover-link .cursor-ring__label {
+  opacity: 1;
+}
