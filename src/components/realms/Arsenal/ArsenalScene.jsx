@@ -27,7 +27,7 @@ const DISCIPLINES = [
     depth: '5 years crafting visual systems',
     color: new THREE.Color(0x7B2FBE),     // plasma purple
     baseFreq: 196,  // G3
-    position: new THREE.Vector3(-4, -0.5, 0),
+    position: new THREE.Vector3(-10, -1.5, 4),
     nodeType: 'blob',
     skills: [
       { name: 'UI/UX Design', desc: 'Designing experiences that feel inevitable', level: 'FLUENT', related: ['Design Systems', 'Motion Design'] },
@@ -44,7 +44,7 @@ const DISCIPLINES = [
     depth: '6 years building production systems',
     color: new THREE.Color(0x00F5FF),     // neural teal
     baseFreq: 220,  // A3
-    position: new THREE.Vector3(4, 1.0, 0),
+    position: new THREE.Vector3(10, 2.0, 0),
     nodeType: 'rings',
     skills: [
       { name: 'React', desc: 'Components as the atomic unit of thought', level: 'MASTER', related: ['TypeScript', 'Performance'] },
@@ -63,7 +63,7 @@ const DISCIPLINES = [
     depth: '4 years in generative territory',
     color: new THREE.Color(0xC9A84C),     // gold
     baseFreq: 246.94, // B3
-    position: new THREE.Vector3(0, 1.5, -3),
+    position: new THREE.Vector3(0, 5.0, -8),
     nodeType: 'fractal',
     skills: [
       { name: 'Generative Art', desc: 'Algorithms that make decisions I would not', level: 'FLUENT', related: ['WebGL/GLSL', 'Creative Coding'] },
@@ -80,7 +80,7 @@ const DISCIPLINES = [
     depth: '4 years thinking in systems',
     color: new THREE.Color(0xF0EDE8),     // ghost white
     baseFreq: 261.63, // C4
-    position: new THREE.Vector3(-3, 0, -2),
+    position: new THREE.Vector3(-8, -3.0, -6),
     nodeType: 'voronoi',
     skills: [
       { name: 'Product Thinking', desc: 'Asking what the problem is before solving it', level: 'FLUENT', related: ['User Research', 'Prototyping'] },
@@ -97,7 +97,7 @@ const DISCIPLINES = [
     depth: 'Sharp tools, daily practice',
     color: new THREE.Color(0xC8A97E),     // amber/silver mix
     baseFreq: 293.66, // D4
-    position: new THREE.Vector3(3, -0.5, -2),
+    position: new THREE.Vector3(8, -4.0, -4),
     nodeType: 'shards',
     skills: [
       { name: 'Figma', desc: 'Where ideas become decisions become handoffs', level: 'MASTER', related: ['Design Systems', 'Prototyping'] },
@@ -560,6 +560,9 @@ function ForgeScene({
   const nodeHomesRef = useRef(DISCIPLINES.map(d => d.position.clone()))
   const nodeScalesRef = useRef(DISCIPLINES.map(() => 1.0))
   const eRef = useRef({ emissive: DISCIPLINES.map(() => 1.0) })
+  const targetCamPosRef = useRef(new THREE.Vector3(0, 3, 18))
+  const targetLookAtRef = useRef(new THREE.Vector3(0, 0, 0))
+  const currentLookAtRef = useRef(new THREE.Vector3(0, 0, 0))
 
   // ── Build scene once ──
   useEffect(() => {
@@ -933,9 +936,8 @@ function ForgeScene({
 
     if (sp < stage1End) {
       // Gathering — pull back
-      const t2 = sp / stage1End
-      camera.position.lerp(new THREE.Vector3(0, 3, 18), 0.03)
-      camera.lookAt(0, 0, 0)
+      targetCamPosRef.current.set(0, 5, 25)
+      targetLookAtRef.current.set(0, 0, 0)
     } else if (sp < 0.88) {
       // Ignition — approach each node
       for (let i = 0; i < 5; i++) {
@@ -944,13 +946,12 @@ function ForgeScene({
         if (sp >= start && sp < end) {
           const t2 = (sp - start) / (end - start)
           const disc = DISCIPLINES[i]
-          const targetPos = disc.position.clone().add(new THREE.Vector3(-3, 1, 6))
-          camera.position.lerp(targetPos, 0.025)
-          const lookAt = disc.position.clone()
-          camera.lookAt(lookAt)
+          
+          targetCamPosRef.current.copy(disc.position).add(new THREE.Vector3(-4, 1.5, 9))
+          targetLookAtRef.current.copy(disc.position)
 
-          // Trigger ignition at 70% approach
-          if (t2 > 0.4 && !nodeGroupsRef.current[i]?.userData.ignited) {
+          // Trigger ignition at 15% approach
+          if (t2 > 0.15 && !nodeGroupsRef.current[i]?.userData.ignited) {
             nodeGroupsRef.current[i].userData.ignited = true
             onNodeActivate(i)
           }
@@ -959,9 +960,14 @@ function ForgeScene({
       }
     } else {
       // Convergence — pull back to overview
-      camera.position.lerp(new THREE.Vector3(0, 4, 20), 0.02)
-      camera.lookAt(0, 0, 0)
+      targetCamPosRef.current.set(0, 6, 28)
+      targetLookAtRef.current.set(0, 0, 0)
     }
+
+    // Smoothly interpolate camera position and look target
+    camera.position.lerp(targetCamPosRef.current, delta * 1.5)
+    currentLookAtRef.current.lerp(targetLookAtRef.current, delta * 2.0)
+    camera.lookAt(currentLookAtRef.current)
 
     // Update particles
     if (particleSystemRef.current) {
@@ -1032,36 +1038,31 @@ function ForgeScene({
       if (!group) return
       const disc = DISCIPLINES[i]
 
-      // Phase A: freeze + recognition
-      group.userData.frozen = true
-      setTimeout(() => {
-        group.userData.frozen = false
-        // Phase B: explosion scale
-        gsap.to(group.scale, {
-          x: 3.0, y: 3.0, z: 3.0, duration: 0.3,
-          ease: 'cubic-bezier(0.34,1.56,0.64,1)',
-          onComplete: () => {
-            gsap.to(group.scale, { x: 1.4, y: 1.4, z: 1.4, duration: 0.4 })
-          }
-        })
-        // Show child particles
-        const childGroup = group.userData.childGroup
-        childGroup.visible = true
-        childGroup.children.forEach((pm, pi) => {
-          const homePos = pm.userData.homePos.clone()
-          pm.position.set(0, 0, 0)
-          gsap.to(pm.position, {
-            x: homePos.x, y: homePos.y, z: homePos.z,
-            delay: pi * 0.01, duration: 0.6, ease: 'power2.out'
-          })
-          // Label fade-in delay handled below as CSS
-          pm.userData.labelVisible = true
-        })
-        // Brighten nearest wall
-        if (wallMatsRef.current[0]) {
-          gsap.to(wallMatsRef.current[0].uniforms.uPulseSync, { value: 0.5, duration: 0.4, yoyo: true, repeat: 1 })
+      // Immediate explosion scale
+      gsap.to(group.scale, {
+        x: 3.0, y: 3.0, z: 3.0, duration: 0.3,
+        ease: 'cubic-bezier(0.34,1.56,0.64,1)',
+        onComplete: () => {
+          gsap.to(group.scale, { x: 1.4, y: 1.4, z: 1.4, duration: 0.4 })
         }
-      }, 200)
+      })
+      // Show child particles
+      const childGroup = group.userData.childGroup
+      childGroup.visible = true
+      childGroup.children.forEach((pm, pi) => {
+        const homePos = pm.userData.homePos.clone()
+        pm.position.set(0, 0, 0)
+        gsap.to(pm.position, {
+          x: homePos.x, y: homePos.y, z: homePos.z,
+          delay: pi * 0.01, duration: 0.6, ease: 'power2.out'
+        })
+        // Label fade-in delay handled below as CSS
+        pm.userData.labelVisible = true
+      })
+      // Brighten nearest wall
+      if (wallMatsRef.current[0]) {
+        gsap.to(wallMatsRef.current[0].uniforms.uPulseSync, { value: 0.5, duration: 0.4, yoyo: true, repeat: 1 })
+      }
     }
     window.addEventListener('forge:ignite', handleIgnition)
     return () => window.removeEventListener('forge:ignite', handleIgnition)
@@ -1102,9 +1103,9 @@ function ForgeScene({
       nodeGroupsRef.current.forEach((group, i) => {
         if (!group) return
         const offset = new THREE.Vector3(
-          Math.cos(i / 5 * Math.PI * 2) * 1.5,
+          Math.cos(i / 5 * Math.PI * 2) * 4.5,
           0,
-          Math.sin(i / 5 * Math.PI * 2) * 1.5
+          Math.sin(i / 5 * Math.PI * 2) * 4.5
         )
         gsap.to(group.position, {
           x: center.x + offset.x, y: center.y + offset.y, z: center.z + offset.z,
