@@ -61,13 +61,27 @@ class RealmErrorBoundary extends Component {
 // Lazy load Realms
 const HeroScene       = lazy(() => import('./components/realms/Manifesto/HeroScene'))
 const ArsenalScene    = lazy(() => import('./components/realms/Arsenal/ArsenalScene'))
-const ArchiveScene    = lazy(() => import('./components/realms/Archive/ArchiveScene'))
+const CartographyScene = lazy(() => import('./components/realms/Cartography/CartographyScene'))
 const SignalScene     = lazy(() => import('./components/realms/Signal/SignalScene'))
 const EchoChamber     = lazy(() => import('./components/realms/EchoChamber/EchoChamberScene'))
 const FrequencyScene  = lazy(() => import('./components/realms/Frequency/FrequencyScene'))
 const MythEngine      = lazy(() => import('./components/realms/MythEngine/MythEngineScene'))
 const Transcendence   = lazy(() => import('./components/realms/Transcendence/TranscendenceScene'))
 const RealmIX         = lazy(() => import('./components/realms/RealmIX/RealmIXScene'))
+
+// Preload realm 5 chunk the moment realm 4 enters the viewport
+// so the JS is already parsed & ready when the user scrolls there
+function usePreloadWhenVisible(sectionRef, importFn) {
+  useEffect(() => {
+    if (!sectionRef.current) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { importFn(); observer.disconnect() } },
+      { rootMargin: '100px' }
+    )
+    observer.observe(sectionRef.current)
+    return () => observer.disconnect()
+  }, [])
+}
 
 function App() {
   const isLoading     = useStore((s) => s.isLoading)
@@ -76,7 +90,11 @@ function App() {
   const toggleSound   = useStore((s) => s.toggleSound)
   const realmIXUnlocked = useStore((s) => s.realmIXUnlocked)
   const containerRef  = useRef(null)
-  
+  const realm4Ref     = useRef(null)  // used to preload realm 5 chunk early
+
+  // Preload realm 5 JS chunk while user is still in realm 4
+  usePreloadWhenVisible(realm4Ref, () => import('./components/realms/EchoChamber/EchoChamberScene'))
+
   // ── HOOKS — ORDER IS CRITICAL ──
   useSound()
   useScroll()
@@ -147,17 +165,17 @@ function App() {
                 <ArsenalScene />
               </section>
 
-              {/* REALM 3: THE ARCHIVE */}
+              {/* REALM 3: THE CARTOGRAPHY */}
               <section className="realm-section realm-3" data-realm="3">
-                <ArchiveScene />
+                <CartographyScene />
               </section>
 
               {/* REALM 4: THE SIGNAL */}
-              <section className="realm-section realm-4" data-realm="4">
+              <section className="realm-section realm-4" data-realm="4" ref={realm4Ref}>
                 <SignalScene />
               </section>
 
-              {/* REALM 5: ECHO CHAMBER */}
+              {/* REALM 5: THE SÉANCE */}
               <section className="realm-section realm-5" data-realm="5">
                 <EchoChamber />
               </section>

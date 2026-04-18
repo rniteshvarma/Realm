@@ -1,54 +1,498 @@
-.echo-chamber {
-  width: 100vw;
-  height: 100vh;
+/* ═══════════════════════════════════════════════════════════
+   REALM 5 — THE SÉANCE
+   COLOR & THEME PATCH (BRIEF 6.2)
+   All values now aligned with REALM master palette.
+   Layout, structure, interactions: unchanged.
+════════════════════════════════════════════════════════════ */
+
+/* ── REALM Master Palette tokens ─────────────────────────── */
+:root {
+  --void:        #000000;
+  --heaven-deep: #0D1B2A;
+  --plasma:      #7B2FBE;
+  --neural:      #00F5FF;
+  --sacred:      #C9A84C;
+  --ghost:       #F0F0F0;
+  --haze:        #1A1A2E;
+  --aurora-1:    #B44FE8;
+  --aurora-2:    #4FABE8;
+  --biolum:      #00FF9D;
+}
+
+/* ── Root wrapper ──────────────────────────────────────── */
+.seance-realm {
   position: relative;
-  background: var(--heaven-deep);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  /* FIX 9: DM Mono matches every other realm's body font */
+  font-family: 'DM Mono', 'Space Mono', monospace;
+}
+
+/* ── FIX 10: Entry mist title — teal mist → ghost solidify ─
+   "V. THE SÉANCE" forms in --neural, cools to --ghost */
+.seance-title {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  font-family: 'Space Grotesk', 'Bebas Neue', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(0, 245, 255, 0.85);   /* --neural: teal mist entry color */
+  pointer-events: none;
+  opacity: 0;
+  text-shadow:
+    0 0 40px rgba(0, 245, 255, 0.5),
+    0 0 80px rgba(0, 245, 255, 0.2);
+  /* JS drives opacity via gsap */
+}
+
+/* ── FIX 9: Realm label (top-left) ───────────────────────
+   Matches persistent UI system: DM Mono, ghost-40%, 0.3em tracking */
+.seance-label {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  z-index: 50;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(240, 240, 240, 0.4);   /* --ghost 40% */
+  text-transform: uppercase;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.seance-label.dim {
+  opacity: 0.08;
+}
+
+/* ── FIX 9: Exchange tick marks ──────────────────────────
+   --sacred gold, same language as Cartography journey line */
+.seance-ticks {
+  position: fixed;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.seance-tick {
+  width: 1px;
+  height: 14px;
+  background: rgba(201, 168, 76, 0.3);   /* --sacred dim */
+  transition: background 0.5s, box-shadow 0.5s;
+}
+
+.seance-tick.active {
+  background: rgba(201, 168, 76, 1);     /* --sacred full */
+  box-shadow:
+    0 0 6px rgba(201, 168, 76, 0.8),
+    0 0 12px rgba(201, 168, 76, 0.3);
+}
+
+/* ── 3D Canvas ───────────────────────────────────────────*/
+.seance-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Stage 1: table text overlay ─────────────────────────
+   FIX 6: ghost-70% with teal glow — matches Realm 4 floor inscription */
+.table-text-container {
+  position: fixed;
+  bottom: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, 80vw);
+  text-align: center;
+  pointer-events: none;
+  z-index: 60;
+}
+
+.table-line {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+  letter-spacing: 0.15em;
+  color: rgba(240, 240, 240, 0);    /* --ghost: starts invisible, JS fades in */
+  text-transform: lowercase;
+  margin: 0.35rem 0;
+  transition: none;
+  /* FIX 6: teal glow on ghost text */
+  text-shadow: 0 0 6px rgba(0, 245, 255, 0.3);
+}
+
+/* ── Stage 2: communion wrapper ──────────────────────────*/
+.communion-wrapper {
+  position: fixed;
+  bottom: 26%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(540px, 82vw);
+  z-index: 80;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.communion-wrapper.visible {
+  opacity: 1;
+}
+
+/* FIX 5: "TYPE ANYTHING. PRESS ENTER." — --neural at 50% */
+.communion-prompt {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(0, 245, 255, 0.5);    /* --neural 50% */
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: block;
+  white-space: nowrap;
   overflow: hidden;
 }
 
-.echo-header {
-  position: absolute;
-  top: 2.5rem;
-  left: 3rem;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.echo-label {
+/* FIX 5: Full input restyle — teal border / gold text / zero radius
+   Same HUD language as constellation nav + Looking Glass + Cartography CTAs */
+.communion-input {
+  /* Layout */
   display: block;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.3em;
-  color: var(--sacred);
-  opacity: 0.7;
-  margin-bottom: 0.3rem;
+  width: 100%;
+
+  /* Typography */
+  font-family: 'DM Mono', 'Space Mono', monospace;
+  font-size: 16px;
+  letter-spacing: 0.15em;
+  color: var(--sacred);             /* #C9A84C — gold text */
+
+  /* Background — transparent holographic HUD panel */
+  background: rgba(0, 245, 255, 0.03);
+  border: none;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.25);
+  border-radius: 0;                 /* No rounded corners anywhere in REALM */
+
+  /* Spacing */
+  padding: 12px 0;
+
+  /* Browser defaults */
+  outline: none;
+  -webkit-appearance: none;
+  caret-color: var(--neural);       /* #00F5FF — teal cursor */
 }
 
-.echo-sub {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.5rem;
-  letter-spacing: 0.2em;
-  color: var(--ghost);
-  opacity: 0.35;
+.communion-input::placeholder {
+  color: rgba(240, 240, 240, 0.2);  /* --ghost 20% */
+  font-style: italic;
+  letter-spacing: 0.1em;
 }
 
-.echo-hint {
-  position: absolute;
-  bottom: 2.5rem;
+.communion-input:focus {
+  border-bottom-color: rgba(0, 245, 255, 0.6);
+  background: rgba(0, 245, 255, 0.05);
+  /* FIX 5: teal glow — matches Looking Glass active state */
+  box-shadow: 0 4px 20px rgba(0, 245, 255, 0.08);
+}
+
+/* FIX 6: "ask again. or let it settle." — --neural 40% italic */
+.communion-hint {
+  margin-top: 0.6rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: rgba(0, 245, 255, 0.4);   /* --neural 40% */
+  text-align: center;
+  text-transform: lowercase;
+  font-style: italic;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.2);
+}
+
+.communion-hint.visible {
+  opacity: 1;
+}
+
+/* ── Session complete message ─────────────────────────── */
+.seance-session-complete {
+  position: fixed;
+  bottom: 26%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10;
+  width: min(420px, 80vw);
+  text-align: center;
+  z-index: 80;
+  opacity: 0;
+  transition: opacity 1s ease;
   pointer-events: none;
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.25em;
-  color: var(--ghost);
-  opacity: 0.3;
-  animation: breathe 3s ease-in-out infinite;
 }
 
-@keyframes breathe {
-  0%, 100% { opacity: 0.2; }
-  50%       { opacity: 0.5; }
+.seance-session-complete.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.seance-session-complete p {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(240, 240, 240, 0.35); /* --ghost 35% — "small truths" style */
+  text-transform: lowercase;
+  margin-bottom: 1rem;
+}
+
+/* Reset button — teal border language */
+.seance-reset-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  color: rgba(0, 245, 255, 0.6);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  padding: 0.4rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.76, 0, 0.24, 1);
+  pointer-events: auto;
+  border-radius: 0;
+}
+
+.seance-reset-btn:hover {
+  border-color: rgba(0, 245, 255, 0.7);
+  color: rgba(0, 245, 255, 1);
+  box-shadow: 0 0 16px rgba(0, 245, 255, 0.15);
+}
+
+/* ── Single-word eruption overlay ─────────────────────────
+   --sacred gold, display font, uppercase — same as Forge titles */
+.word-eruption {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0;
+}
+
+.word-eruption-text {
+  font-family: 'Space Grotesk', 'Bebas Neue', sans-serif;
+  font-size: clamp(4rem, 12vw, 9rem);
+  letter-spacing: 0.08em;
+  color: rgba(201, 168, 76, 0.9);   /* --sacred */
+  text-transform: uppercase;
+  text-shadow:
+    0 0 20px rgba(201, 168, 76, 1),
+    0 0 60px rgba(201, 168, 76, 0.5),
+    0 0 120px rgba(201, 168, 76, 0.2);
+}
+
+/* ── FIX 11: 7th exchange wall text ──────────────────────
+   Burn sequence: white hot → --aurora-1 violet → --sacred gold
+   JS animates color through the 3 stages */
+.wall-inscription-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 150;
+}
+
+.wall-sentence {
+  position: absolute;
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(0.7rem, 1.5vw, 1rem);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0);
+  white-space: nowrap;
+  overflow: hidden;
+  width: 0;
+  /* JS controls width for burn-in + color transition:
+     white (#FFFFFF) → violet (#B44FE8) → gold (#C9A84C) */
+}
+
+/* Positioning: each sentence on a different edge */
+.wall-sentence.north { top: 12%;  left: 50%; transform: translateX(-50%); }
+.wall-sentence.east  { right: 8%; top: 50%;  transform: translateY(-50%) rotate(90deg); transform-origin: center; }
+.wall-sentence.south { bottom: 12%; left: 50%; transform: translateX(-50%); }
+.wall-sentence.west  { left: 8%; top: 50%;  transform: translateY(-50%) rotate(-90deg); transform-origin: left center; }
+
+/* ── FIX 11: Final line — "this conversation will not be remembered" ──
+   DM Mono 11px ghost-35% — same "small truths" language as Looking Glass */
+.seance-final-text {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(240, 240, 240, 0);    /* JS fades in to ghost 35% */
+  text-align: center;
+  pointer-events: none;
+  z-index: 200;
+  white-space: nowrap;
+  text-transform: lowercase;
+}
+
+/* ── FIX 7: Stage 3 belief text overlays ─────────────────
+   Space Grotesk 48px, --ghost, 0.25em tracking — matches REALM display scale */
+.seance-beliefs-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 70;
+}
+
+.belief-text {
+  position: absolute;
+  font-family: 'Space Grotesk', 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(240, 240, 240, 0);    /* --ghost: starts 0, JS animates to 1 */
+  white-space: nowrap;
+  /* FIX 7: cinematic ease on revealed state — REALM signature */
+  transition: color 1200ms cubic-bezier(0.76, 0, 0.24, 1);
+  text-shadow:
+    0 0 20px currentColor,          /* REALM glow rule */
+    0 0 40px rgba(0, 245, 255, 0.05); /* faint cold teal shadow */
+}
+
+/* Positioned on the four walls (camera ascends in stage 3) */
+.belief-text.wall-n { top: 10%;    left: 50%; transform: translateX(-50%); text-align: center; }
+.belief-text.wall-e { right: 4%;   top: 50%;  transform: translateY(-50%) rotate(90deg); transform-origin: right center; }
+.belief-text.wall-s { bottom: 10%; left: 50%; transform: translateX(-50%); text-align: center; }
+.belief-text.wall-w { left: 4%;    top: 50%;  transform: translateY(-50%) rotate(-90deg); transform-origin: left center; }
+
+/* FIX 7: Master belief — floor, larger, --sacred gold (hierarchy: gold > ghost) */
+.belief-text.floor {
+  bottom: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 72px;
+  color: rgba(201, 168, 76, 0);     /* --sacred gold: JS fades in */
+  text-align: center;
+}
+
+/* ── FIX 10: Aerial name reveal ──────────────────────────
+   --sacred gold, Bebas Neue, 0.0→0.7→0.0 opacity — watermark, not shout */
+.seance-name-reveal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 180;
+  opacity: 0;
+}
+
+.seance-name-reveal h2 {
+  font-family: 'Space Grotesk', 'Bebas Neue', sans-serif;
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: 0.3em;
+  color: rgba(201, 168, 76, 0.7);   /* --sacred, never fully opaque */
+  font-weight: 700;
+  margin: 0;
+  text-transform: uppercase;
+  text-shadow: 0 0 40px rgba(201, 168, 76, 0.35);
+}
+
+.seance-name-reveal p {
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(0.65rem, 1.2vw, 0.9rem);
+  letter-spacing: 0.4em;
+  color: rgba(201, 168, 76, 0.4);
+  text-transform: uppercase;
+  margin-top: 0.6rem;
+}
+
+/* ── Stage 1 voice prompt ────────────────────────────────*/
+.seance-voice-prompt {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(0.7rem, 1.3vw, 0.9rem);
+  letter-spacing: 0.25em;
+  color: rgba(201, 168, 76, 0);     /* --sacred: JS fades to 60% */
+  text-transform: lowercase;
+  pointer-events: none;
+  z-index: 60;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ── Loading / thinking state ────────────────────────────
+   --neural at 50% — same as other realm loading indicators */
+.seance-thinking {
+  position: fixed;
+  bottom: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: rgba(0, 245, 255, 0.5);    /* --neural */
+  text-transform: uppercase;
+  opacity: 0;
+  z-index: 80;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.seance-thinking.visible {
+  opacity: 1;
+}
+
+/* ── Profanity rebuke flash ───────────────────────────── */
+.seance-rebuke {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+  letter-spacing: 0.2em;
+  color: rgba(240, 240, 240, 0.7);  /* --ghost 70% */
+  text-transform: lowercase;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0;
+  text-align: center;
+}
+
+/* ── "you may move on" nudge ─────────────────────────────
+   --neural at 40% — ambient, not commanding */
+.seance-nudge {
+  position: fixed;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(0, 245, 255, 0.4);    /* --neural 40% */
+  text-transform: lowercase;
+  pointer-events: none;
+  z-index: 80;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+.seance-nudge.visible {
+  opacity: 1;
 }

@@ -357,7 +357,16 @@ export default function SignalScene() {
 
         const lenis = getLenis()
         if (p >= 0.9 && !shattered) {
-            // Lock Scroll at 90%
+            // Prevent fast scrolls from bleeding into the next section before locking
+            const maxPos = self.start + (self.end - self.start) * 0.9
+            if (self.scroll() > maxPos) {
+                if (lenis) {
+                    lenis.scrollTo(maxPos, { immediate: true })
+                } else {
+                    window.scrollTo(0, maxPos)
+                }
+            }
+            // Lock Scroll
             if (lenis) lenis.stop()
             setCursorState('hover-glass') // trigger hand cursor
         }

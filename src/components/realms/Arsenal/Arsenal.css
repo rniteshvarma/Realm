@@ -1,116 +1,353 @@
-.arsenal-container {
+/* ═══════════════════════════════════════════════════════════
+   THE FORGE — Realm II (Arsenal.css)
+   Dark chamber where skills exist as raw, unstable energies
+═══════════════════════════════════════════════════════════ */
+
+/* ── Container ─────────────────────────────────────────── */
+.forge-container {
   width: 100vw;
   height: 100vh;
-  background: var(--haze);
+  background: #050810;
   overflow: hidden;
   position: relative;
-  /* Perspective trick for depth fog */
-  perspective: 1000px;
 }
 
-.arsenal-tunnel {
-  height: 100vh;
-  width: 400vw; /* 4 segments, 100vw each */
-  display: flex;
+/* ── Realm Label (top-left) ───────────────────────────── */
+.forge-realm-label {
   position: absolute;
-  top: 0;
-  left: 0;
-  will-change: transform;
-}
-
-.tunnel-segment {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
+  top: 2rem;
+  left: 2rem;
+  z-index: 100;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.skill-canvas {
-  width: 600px;
-  height: 600px;
-  max-width: 90vw;
-  max-height: 90vh;
-  pointer-events: none; /* Let canvas ignore cursor if needed, or enable for 3D interactions */
-  transition: transform 0.6s var(--ease-spring);
-}
-
-.tunnel-segment:hover .skill-canvas {
-  transform: scale(1.1);
-}
-
-.skill-title {
-  position: absolute;
-  top: 15%;
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 6rem);
-  letter-spacing: 0.1em;
-  opacity: 0.1;
-  text-align: center;
-  width: 100%;
+  gap: 0.3rem;
   pointer-events: none;
-  transition: opacity 0.6s var(--ease-cinematic), filter 0.6s;
-  mix-blend-mode: overlay;
 }
 
-.tunnel-segment:hover .skill-title {
-  opacity: 0.8;
-  filter: blur(2px);
-}
-
-.skill-tooltip {
-  position: absolute;
-  bottom: 20%;
+.forge-realm-num {
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 0.65rem;
   letter-spacing: 0.2em;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.6s var(--ease-spring);
-  color: var(--ghost);
-  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+  color: rgba(249, 245, 241, 0.35);
+  text-transform: uppercase;
 }
 
-.tunnel-segment:hover .skill-tooltip {
+.forge-active-disc {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: #C9A84C;
+  text-shadow: 0 0 12px rgba(201, 168, 76, 0.7);
+  text-transform: uppercase;
+  animation: forgePulseGold 1.5s ease-in-out infinite;
+}
+
+@keyframes forgePulseGold {
+  0%, 100% { opacity: 1; }
+  50%  { opacity: 0.6; }
+}
+
+/* ── Discipline Progress Dots (bottom-left) ────────────── */
+.forge-progress-dots {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 2rem;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: center;
+  pointer-events: none;
+}
+
+.forge-progress-dots::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 50%;
+  width: 1px;
+  background: rgba(201, 168, 76, 0.2);
+  transform: translateX(-50%);
+  z-index: -1;
+  transition: background 1s;
+}
+
+/* When all visited */
+.forge-progress-dots.all-visited::before {
+  background: rgba(201, 168, 76, 0.6);
+  box-shadow: 0 0 8px rgba(201, 168, 76, 0.4);
+}
+
+.forge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  background: transparent;
+  transition: all 0.6s ease;
+  position: relative;
+}
+
+.forge-dot.visited {
+  background: #C9A84C;
+  border-color: #C9A84C;
+  box-shadow: 0 0 10px rgba(201, 168, 76, 0.8);
+}
+
+.forge-dot.active {
+  animation: forgeDotPulse 0.8s ease-in-out infinite;
+  background: #C9A84C;
+  border-color: #C9A84C;
+}
+
+@keyframes forgeDotPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(201, 168, 76, 0.6); transform: scale(1); }
+  50% { box-shadow: 0 0 18px rgba(201, 168, 76, 1); transform: scale(1.3); }
+}
+
+/* ── Particle count easter egg (bottom-right) ──────────── */
+.forge-particle-count {
+  position: absolute;
+  bottom: 1.2rem;
+  right: 1.5rem;
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: rgba(249, 245, 241, 0.15);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Approach Prompt ───────────────────────────────────── */
+.forge-approach-prompt {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  color: rgba(249, 245, 241, 0.4);
+  pointer-events: none;
+  animation: forgePromptPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes forgePromptPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+/* ── Discipline Title Overlay ──────────────────────────── */
+.forge-discipline-overlay {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  text-align: center;
+  pointer-events: none;
+  width: 90vw;
+  max-width: 1000px;
+}
+
+.forge-disc-title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0 0 0.8rem;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.forge-letter {
+  display: inline-block;
+  animation: forgeLetterHeat 0.4s forwards;
+  opacity: 0;
+  color: #C9A84C;
+}
+
+@keyframes forgeLetterHeat {
+  0%   { opacity: 0; color: #6B2020; text-shadow: none; }
+  40%  { opacity: 1; color: #CC5500; text-shadow: 0 0 20px rgba(204, 85, 0, 0.8); }
+  100% { opacity: 1; color: #C9A84C; text-shadow: 0 0 30px rgba(201, 168, 76, 0.6), 0 0 60px rgba(201, 168, 76, 0.3); }
+}
+
+.forge-disc-desc {
+  font-family: var(--font-mono);
+  font-size: clamp(0.65rem, 1.2vw, 0.9rem);
+  letter-spacing: 0.12em;
+  color: rgba(240, 237, 232, 0.6);
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+}
+
+.forge-disc-depth {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: rgba(201, 168, 76, 0.5);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* ── Convergence Text ──────────────────────────────────── */
+.forge-convergence-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 200;
+  text-align: center;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.forge-conv-line {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+}
+
+.forge-conv-letter {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 4rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: forgeConvLetter 0.3s forwards;
+  opacity: 0;
+  color: #F9F5F1;
+}
+
+@keyframes forgeConvLetter {
+  0%   { opacity: 0; color: #ffffff; text-shadow: 0 0 40px rgba(255,255,255,1); transform: scale(1.3); }
+  30%  { opacity: 1; color: #ffffff; text-shadow: 0 0 20px rgba(255,255,255,0.7); }
+  100% { opacity: 1; color: #C9A84C; text-shadow: 0 0 12px rgba(201, 168, 76, 0.5); transform: scale(1); }
+}
+
+/* ── Free Forge Prompt ──────────────────────────────────── */
+.forge-freeforge-prompt {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  color: rgba(201, 168, 76, 0.7);
+  pointer-events: none;
+  animation: forgePromptPulse 2s ease-in-out infinite;
+  text-transform: uppercase;
+}
+
+/* ── Skill Tooltip ─────────────────────────────────────── */
+.forge-skill-tooltip {
+  position: fixed;
+  z-index: 500;
+  background: rgba(5, 8, 16, 0.92);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  min-width: 200px;
+  max-width: 260px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(201, 168, 76, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.forge-skill-tooltip.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Base level fog simulation with CSS gradients */
-.arsenal-container::after {
+.forge-tooltip-header {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: #C9A84C;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.forge-tooltip-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(201, 168, 76, 0.4), transparent);
+  margin-bottom: 0.5rem;
+}
+
+.forge-tooltip-desc {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  color: rgba(240, 237, 232, 0.7);
+  line-height: 1.5;
+  margin-bottom: 0.7rem;
+}
+
+.forge-tooltip-wave {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.forge-tooltip-level {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  color: rgba(201, 168, 76, 0.6);
+  text-transform: uppercase;
+}
+
+/* ── Vignette overlay ──────────────────────────────────── */
+.forge-container::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 30%, var(--haze) 100%);
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(5, 8, 16, 0.6) 100%);
   pointer-events: none;
-  z-index: 10;
+  z-index: 50;
 }
 
-/* ── Bioluminescent vein patterns on tunnel walls ── */
-.arsenal-container::before {
-  content: '';
+/* ── Entry flash overlay ───────────────────────────────── */
+.forge-flash {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, transparent 48%, rgba(0, 255, 157, 0.04) 50%, transparent 52%),
-    linear-gradient(90deg, transparent 28%, rgba(201, 168, 76, 0.03) 30%, transparent 32%),
-    linear-gradient(90deg, transparent 68%, rgba(0, 245, 255, 0.04) 70%, transparent 72%);
+  background: white;
+  z-index: 300;
   pointer-events: none;
-  z-index: 2;
-  animation: veinPulse 6s ease-in-out infinite;
+  animation: forgeFlash 0.1s forwards;
 }
 
-@keyframes veinPulse {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+@keyframes forgeFlash {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
 }
 
-/* ── Skill canvas root ─────────────────────────── */
-.arsenal-canvas-root {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
+/* ── Mobile adaptations ────────────────────────────────── */
+@media (max-width: 768px) {
+  .forge-disc-title {
+    font-size: clamp(2rem, 10vw, 4rem);
+  }
+  .forge-approach-prompt,
+  .forge-freeforge-prompt {
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+  }
+  .forge-skill-tooltip {
+    display: none; /* touch = no hover tooltip */
+  }
 }
-

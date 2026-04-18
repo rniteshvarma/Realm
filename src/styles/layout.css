@@ -2,16 +2,30 @@
 .experience-container {
   width: 100%;
   position: relative;
-  overflow-x: hidden;
 }
 
 .realm-section {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   position: relative;
 }
 
-/* Realms 6 (Frequency) is taller — 5 segments worth */
+/* Explicit Heights to pre-allocate GSAP Pin Spacers (Prevents premature triggering) */
+/* Realm 2 (The Forge) — 600vh scrub travel */
+.realm-2 {
+  height: calc(100vh + 6000px);
+}
+/* Realm 3 (The Cartography) — 5 orbital zones × 400vh + 200vh intro/outro */
+.realm-3 {
+  height: 2200vh;
+}
+.realm-4 {
+  height: 500vh;
+}
+/* Realm 5 (The Séance) — 3 acts × scroll space */
+.realm-5 {
+  height: 500vh;
+}
 .realm-6 {
   height: 600vh;
 }
@@ -21,20 +35,7 @@
   height: 500vh;
 }
 
-/* ── Realm 2 Specific Wrapper ──────────────────────── */
-.arsenal-wrapper {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-}
-
-.arsenal-tunnel {
-  width: 400vw;
-  height: 100vh;
-  display: flex;
-  will-change: transform;
-}
+/* ── Realm 2 (The Forge) — no tunnel, full-screen canvas ── */
 
 /* ── Persistent UI ──────────────────────────────────── */
 .persistent-ui {

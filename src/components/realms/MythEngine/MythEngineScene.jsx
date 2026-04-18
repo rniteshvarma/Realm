@@ -56,7 +56,9 @@ function Monolith({ influence, angle, radius, isActive, onClick }) {
     }
   })
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e.stopPropagation()
+    if (e.delta > 2) return
     if (split) return
     setSplit(true)
     onClick()
@@ -159,9 +161,13 @@ function MetatronCenter({ onClickCube }) {
     <group
       ref={groupRef}
       position={[0, 1, 0]}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-      onClick={onClickCube}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+      onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
+      onClick={(e) => {
+        e.stopPropagation()
+        if (e.delta > 2) return
+        onClickCube()
+      }}
     >
       {lines.map((pts, i) => {
         const geo = new THREE.BufferGeometry()

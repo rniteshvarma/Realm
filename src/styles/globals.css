@@ -82,6 +82,7 @@ body {
 /* ── Custom Scrollbar (for any overflow areas) ─────── */
 ::-webkit-scrollbar {
   width: 4px;
+  height: 0px; /* Hide horizontal scrollbar line */
 }
 ::-webkit-scrollbar-track {
   background: var(--void);
