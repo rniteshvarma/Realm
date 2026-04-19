@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useStore } from '../store/useStore'
 import heavenEngine from '../audio/HeavenAudioEngine'
 
@@ -8,7 +8,19 @@ import heavenEngine from '../audio/HeavenAudioEngine'
 
 export const useSound = () => {
   const soundEnabled = useStore((s) => s.soundEnabled)
+  const setSoundEnabled = useStore((s) => s.setSoundEnabled)
   const realm = useStore((s) => s.realm)
+  const prevRealmRef = useRef(realm)
+
+  useEffect(() => {
+    // Requirement: Absolute silence when scrolling past Realm II unless manually overridden.
+    if (realm > 2 && prevRealmRef.current <= 2) {
+      if (soundEnabled) {
+        setSoundEnabled(false)
+      }
+    }
+    prevRealmRef.current = realm
+  }, [realm, soundEnabled, setSoundEnabled])
 
   useEffect(() => {
     if (soundEnabled) {

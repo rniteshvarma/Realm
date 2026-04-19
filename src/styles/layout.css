@@ -20,19 +20,19 @@
   height: 2200vh;
 }
 .realm-4 {
-  height: 500vh;
+  height: 400vh;
 }
 /* Realm 5 (The Nebula) — 600vh: Entry + 5 Morphs + Supernova + Silence */
 .realm-5 {
   height: 600vh;
 }
 .realm-6 {
-  height: 600vh;
+  height: 500vh;
 }
 
 /* Realm 7 (Myth Engine) — horizontal, pinned */
 .realm-7 {
-  height: 500vh;
+  height: 400vh;
 }
 
 /* ── Realm 2 (The Forge) — no tunnel, full-screen canvas ── */

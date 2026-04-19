@@ -14,6 +14,7 @@ export const useStore = create((set, get) => ({
   // ── Sound state ──────────────────────────────────────
   soundEnabled: false,
   toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
+  setSoundEnabled: (v) => set({ soundEnabled: v }),
 
   // ── Cursor state ─────────────────────────────────────
   // 'default' | 'hover-link' | 'hover-drag' | 'active'

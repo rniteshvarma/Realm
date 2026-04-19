@@ -49,16 +49,7 @@ class HeavenAudioEngine {
   createHeavenLayer() {
     if (!this.reverbNode) return
 
-    // ── Layer 1: Sub bass — the "ground" of heaven (felt not heard) ──
-    const sub = this.ctx.createOscillator()
-    sub.type = 'sine'
-    sub.frequency.value = 55 // A1
-    const subGain = this.ctx.createGain()
-    subGain.gain.value = 0.04
-    sub.connect(subGain)
-    subGain.connect(this.masterGain)
-    sub.start()
-    this.oscillators.push(sub)
+    // Sub-bass layer removed to ensure absolute silence and prevent hardware vibration
 
     // ── Layer 2: Choir pad — 5 detuned sine waves ──
     const choirFreqs = [220, 277.18, 329.63, 440, 554.37] // A3 chord
@@ -92,7 +83,7 @@ class HeavenAudioEngine {
     shimmerLFO.connect(shimmerLFOGain)
     shimmerLFOGain.connect(shimmer.frequency)
     const shimmerGain = this.ctx.createGain()
-    shimmerGain.gain.value = 0.008
+    shimmerGain.gain.value = 0.00 // Mutated: High pitch triangle wave sounds like buzzing to some users
     shimmer.connect(shimmerGain)
     shimmerGain.connect(this.reverbNode)
     shimmer.start()
@@ -166,8 +157,11 @@ class HeavenAudioEngine {
 
   stop() {
     this._running = false
-    this.fadeOut(2)
-    // Don't close the context — just silence it so we can restart
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.cancelScheduledValues(this.ctx.currentTime)
+      this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, this.ctx.currentTime)
+      this.masterGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.2)
+    }
   }
 
   // ── REALM 4: THE LOOKING GLASS AUDIO FX ──

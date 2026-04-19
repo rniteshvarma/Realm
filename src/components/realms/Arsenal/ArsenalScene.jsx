@@ -10,6 +10,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import * as THREE from 'three'
 import { getLenis } from '../../../hooks/useScroll'
+import { useStore } from '../../../store/useStore'
 import './Arsenal.css'
 
 import containmentVert from '../../../gl/shaders/containmentField.vert.glsl?raw'
@@ -127,24 +128,13 @@ function createForgeAudio() {
 
   function startAmbience() {
     init()
-    if (ambientOsc) return
-    // Sub bass
-    ambientOsc = ctx.createOscillator()
-    ambientOsc.type = 'sine'
-    ambientOsc.frequency.value = 40
-    const subGain = ctx.createGain()
-    subGain.gain.value = 0.03
-    ambientOsc.connect(subGain)
-    // LFO breathing
-    lfoNode = ctx.createOscillator()
-    lfoNode.frequency.value = 0.5
-    const lfoGain = ctx.createGain()
-    lfoGain.gain.value = 0.08
-    lfoNode.connect(lfoGain)
-    lfoGain.connect(subGain.gain)
-    subGain.connect(masterGain)
-    ambientOsc.start()
-    lfoNode.start()
+    if (ambientOsc) {
+      masterGain.gain.cancelScheduledValues(ctx.currentTime)
+      masterGain.gain.linearRampToValueAtTime(1.0, ctx.currentTime + 1)
+      return
+    }
+
+    // Background hum removed to eliminate hardware vibration/buzz.
     masterGain.gain.linearRampToValueAtTime(1.0, ctx.currentTime + 2)
   }
 
@@ -1165,6 +1155,22 @@ export default function ArsenalScene() {
   const raycasterRef = useRef(new THREE.Raycaster())
   const pointerNDCRef = useRef(new THREE.Vector2())
 
+  const realm = useStore(s => s.realm)
+  const soundEnabled = useStore(s => s.soundEnabled)
+
+  // Enforce audio bounds
+  useEffect(() => {
+    if (realm !== 2 || !soundEnabled) {
+      if (audioRef.current?.stopAll) {
+        audioRef.current.stopAll()
+      }
+    } else {
+      if (audioRef.current?.startAmbience) {
+        try { audioRef.current.startAmbience() } catch(e) {}
+      }
+    }
+  }, [realm, soundEnabled])
+
   // ── Scroll orchestration ──
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -1255,16 +1261,7 @@ export default function ArsenalScene() {
   }, [])
 
   // Entry ambience on first scroll
-  const ambienceStarted = useRef(false)
-  useEffect(() => {
-    const tryStart = () => {
-      if (ambienceStarted.current) return
-      ambienceStarted.current = true
-      try { audioRef.current?.startAmbience() } catch (e) {}
-    }
-    document.addEventListener('pointerdown', tryStart, { once: true })
-    return () => document.removeEventListener('pointerdown', tryStart)
-  }, [])
+  // Removing rogue tryStart effect that was forcing audio start globally.
 
   // Convergence text animation helper
   const convergenceLine1 = 'YOUR DISCIPLINES DON\'T COMPETE.'

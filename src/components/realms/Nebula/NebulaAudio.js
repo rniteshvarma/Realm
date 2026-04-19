@@ -12,10 +12,6 @@
 export class NebulaAudio {
   constructor() {
     this.ctx = null
-    this.masterGain = null
-    this.humGain = null
-    this.humOscillators = []
-    this.convolver = null
     this.initialized = false
     this._currentMorph = -1
     this._humFadeTimeout = null
@@ -42,41 +38,12 @@ export class NebulaAudio {
       this.convolver.connect(reverbGain)
       reverbGain.connect(this.masterGain)
 
-      // Build hum
-      this._buildHum()
-
       this.initialized = true
     } catch (e) {
       console.warn('[NebulaAudio] init failed:', e)
     }
   }
 
-  // ──────────────────────────────────────────────────────────
-  // HUM
-  // ──────────────────────────────────────────────────────────
-
-  _buildHum() {
-    const freqs = [55, 82, 110]
-    this.humGain = this.ctx.createGain()
-    this.humGain.gain.value = 0.015
-    this.humGain.connect(this.masterGain)
-    this.humGain.connect(this.convolver)
-
-    freqs.forEach(freq => {
-      const osc = this.ctx.createOscillator()
-      osc.type = 'sine'
-      osc.frequency.value = freq
-      osc.connect(this.humGain)
-      osc.start()
-      this.humOscillators.push(osc)
-    })
-  }
-
-  setHumVolume(vol, rampTime = 0.5) {
-    if (!this.initialized || !this.humGain) return
-    this.humGain.gain.cancelScheduledValues(this.ctx.currentTime)
-    this.humGain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + rampTime)
-  }
 
   // ──────────────────────────────────────────────────────────
   // CONVOLUTION REVERB (procedural impulse response)
@@ -228,14 +195,13 @@ export class NebulaAudio {
     if (!this.initialized) return
     const now = this.ctx.currentTime
 
-    // 1. Fade out hum immediately
-    this.setHumVolume(0, 0.2)
+    // 1. (Hum removed)
 
     // 2. Sub-bass hit (40Hz) — felt physically
     const subG = this._gain(0.4, now)
     const subOsc = this.ctx.createOscillator()
     subOsc.type = 'sine'
-    subOsc.frequency.value = 40
+    subOsc.frequency.value = 80 // Shifted from 40Hz to avoid vibration
     subG.gain.setValueAtTime(0.4, now)
     subG.gain.exponentialRampToValueAtTime(0.001, now + 2.0)
     subOsc.connect(subG); subG.connect(this.masterGain)
@@ -265,14 +231,8 @@ export class NebulaAudio {
     shimOsc.connect(shimG); shimG.connect(this.masterGain)
     shimOsc.start(now + 0.1); shimOsc.stop(now + 1.9)
 
-    // 5. 2s silence, then star field hum fades back in
+    // 5. 2s silence
     if (this._humFadeTimeout) clearTimeout(this._humFadeTimeout)
-    this._humFadeTimeout = setTimeout(() => {
-      // Silence for 2 full seconds after shimmer
-      setTimeout(() => {
-        this.setHumVolume(0.015, 4.0) // 4s fade back in
-      }, 2000)
-    }, 1800)
   }
 
   // ──────────────────────────────────────────────────────────
@@ -295,8 +255,6 @@ export class NebulaAudio {
   }
 
   destroy() {
-    this.humOscillators.forEach(o => { try { o.stop(); o.disconnect() } catch (e) {} })
-    this.humOscillators = []
     if (this._humFadeTimeout) clearTimeout(this._humFadeTimeout)
     if (this.ctx) {
       this.ctx.close().catch(() => {})

@@ -406,7 +406,6 @@ export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, 
         if (act !== currentActRef.current) { currentActRef.current = act; onActChange?.(act) }
         return
 
-      } else {
         act = 7
         material.uniforms.uSupernovaProgress.value = 1.0
         material.uniforms.uDebrisDecay.value       = 0.04
@@ -418,7 +417,10 @@ export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, 
 
       if (act !== currentActRef.current) {
         currentActRef.current = act
-        if (act >= 1 && act <= 5) audio.current?.triggerMorph(act)
+        if (act >= 1 && act <= 5) {
+          if (!audio.current?.initialized) initAudio()
+          audio.current?.triggerMorph(act)
+        }
         onActChange?.(act)
       }
 
@@ -448,12 +450,12 @@ export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, 
     }
     window.addEventListener('mousemove', onMouse)
 
-    // ── Audio init on gesture ─────────────────────────────
+    // Audio init is now handled contextually in onProgress to avoid global buzz
     const initAudio = async () => {
-      await audio.current?.init().catch(() => {})
+      if (audio.current && !audio.current.initialized) {
+        await audio.current.init().catch(() => {})
+      }
     }
-    document.addEventListener('click',  initAudio, { once: true })
-    document.addEventListener('scroll', initAudio, { once: true })
 
     // ── Async text extraction ─────────────────────────────
     ;(async () => {

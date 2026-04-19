@@ -284,7 +284,7 @@ class SeanceAudio {
     const sub  = this.ctx.createOscillator()
     const subG = this.ctx.createGain()
     sub.type = 'sine'
-    sub.frequency.value = 60
+    sub.frequency.value = 240 // Shifted to 240Hz to eliminate all low-frequency vibration
     subG.gain.value = 0.04
     sub.connect(subG)
     subG.connect(this.masterGain)
