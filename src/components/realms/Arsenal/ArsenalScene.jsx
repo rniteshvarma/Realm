@@ -395,7 +395,7 @@ class SpringNode {
 }
 
 // ─── GPGPU-lite Particle System ──────────────────────────────────────────────
-const PARTICLE_COUNT = 3000
+const PARTICLE_COUNT = 0
 function createParticleSystem(scene) {
   const positions = new Float32Array(PARTICLE_COUNT * 3)
   const velocities = new Float32Array(PARTICLE_COUNT * 3)
@@ -1315,10 +1315,7 @@ export default function ArsenalScene() {
         ))}
       </div>
 
-      {/* BOTTOM RIGHT — particle count easter egg */}
-      <div className="forge-particle-count">
-        PARTICLES: {particleCount.toLocaleString()}
-      </div>
+
 
       {/* APPROACH PROMPT */}
       {showApproachPrompt && (

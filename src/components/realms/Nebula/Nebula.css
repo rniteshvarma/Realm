@@ -1,0 +1,140 @@
+/* Nebula.css — Realm 5: The Nebula */
+
+/* ── PALETTE VARIABLES ──────────────────────────────────── */
+:root {
+  --nebula-void:       #000000;
+  --nebula-heaven:     #0D1B2A;
+  --nebula-plasma:     #7B2FBE;
+  --nebula-neural:     #00F5FF;
+  --nebula-sacred:     #C9A84C;
+  --nebula-ghost:      #F0F0F0;
+  --nebula-aurora-1:   #B44FE8;
+  --nebula-aurora-2:   #4FABE8;
+  --nebula-haze:       #1A1A2E;
+}
+
+/* ── SCROLL CONTAINER ────────────────────────────────────── */
+/* .realm-5 in layout.css sets height: 600vh — this fills it */
+.nebula-scene {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: var(--nebula-void);
+}
+
+/* ── STICKY CANVAS ───────────────────────────────────────── */
+.nebula-canvas-sticky {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #000000;
+}
+
+.nebula-canvas-sticky canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── REALM LABEL ─────────────────────────────────────────── */
+.nebula-realm-label {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--nebula-ghost);
+  opacity: 0.15;
+  z-index: 100;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  mix-blend-mode: screen;
+}
+
+/* Hide label during supernova */
+.nebula-scene.nebula--supernova .nebula-realm-label {
+  opacity: 0;
+}
+
+/* ── ACT INDICATOR DOTS ──────────────────────────────────── */
+.nebula-act-dots {
+  position: absolute;
+  bottom: 2.5rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.nebula-act-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--nebula-ghost);
+  opacity: 0.20;
+  transition: opacity 0.4s ease, background 0.4s ease, transform 0.3s ease;
+}
+
+.nebula-act-dot--filled {
+  background: var(--nebula-sacred);
+  opacity: 0.75;
+  transform: scale(1.3);
+  box-shadow: 0 0 6px 2px rgba(201, 168, 76, 0.5);
+}
+
+/* ConstellationNav dim during Nebula */
+.realm-5-active .constellation-nav {
+  opacity: 0.08 !important;
+}
+
+/* ── SCROLL PROMPT ───────────────────────────────────────── */
+.nebula-scroll-prompt {
+  position: absolute;
+  bottom: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--nebula-neural);
+  opacity: 0;
+  animation: nebula-prompt-pulse 3s ease-in-out 1.5s infinite;
+  pointer-events: none;
+  z-index: 50;
+  text-transform: lowercase;
+}
+
+@keyframes nebula-prompt-pulse {
+  0%   { opacity: 0; }
+  30%  { opacity: 0.4; }
+  70%  { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+
+/* ── MOBILE ADJUSTMENTS ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .nebula-realm-label {
+    font-size: 9px;
+    top: 1.2rem;
+    left: 1.2rem;
+  }
+
+  .nebula-act-dots {
+    bottom: 1.5rem;
+    right: 1.2rem;
+    gap: 6px;
+  }
+
+  .nebula-act-dot {
+    width: 4px;
+    height: 4px;
+  }
+}

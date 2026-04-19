@@ -63,7 +63,7 @@ const HeroScene       = lazy(() => import('./components/realms/Manifesto/HeroSce
 const ArsenalScene    = lazy(() => import('./components/realms/Arsenal/ArsenalScene'))
 const CartographyScene = lazy(() => import('./components/realms/Cartography/CartographyScene'))
 const SignalScene     = lazy(() => import('./components/realms/Signal/SignalScene'))
-const EchoChamber     = lazy(() => import('./components/realms/EchoChamber/EchoChamberScene'))
+const NebulaScene     = lazy(() => import('./components/realms/Nebula/NebulaScene'))
 const FrequencyScene  = lazy(() => import('./components/realms/Frequency/FrequencyScene'))
 const MythEngine      = lazy(() => import('./components/realms/MythEngine/MythEngineScene'))
 const Transcendence   = lazy(() => import('./components/realms/Transcendence/TranscendenceScene'))
@@ -93,7 +93,7 @@ function App() {
   const realm4Ref     = useRef(null)  // used to preload realm 5 chunk early
 
   // Preload realm 5 JS chunk while user is still in realm 4
-  usePreloadWhenVisible(realm4Ref, () => import('./components/realms/EchoChamber/EchoChamberScene'))
+  usePreloadWhenVisible(realm4Ref, () => import('./components/realms/Nebula/NebulaScene'))
 
   // ── HOOKS — ORDER IS CRITICAL ──
   useSound()
@@ -175,9 +175,9 @@ function App() {
                 <SignalScene />
               </section>
 
-              {/* REALM 5: THE SÉANCE */}
+              {/* REALM 5: THE NEBULA */}
               <section className="realm-section realm-5" data-realm="5">
-                <EchoChamber />
+                <NebulaScene />
               </section>
 
               {/* REALM 6: THE FREQUENCY */}

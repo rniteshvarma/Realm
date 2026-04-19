@@ -418,7 +418,7 @@ export default function SignalScene() {
       </div>
 
       <div className={`shatter-prompt ${scrollProgress >= 0.9 && !shattered ? 'visible' : ''}`}>
-         PRESS YOUR HAND AGAINST THE GLASS.
+         BREAK THE GLASS TO MOVE FORWARD.
       </div>
 
       {objectsVisible && (
