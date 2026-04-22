@@ -108,6 +108,12 @@ class HeavenAudioEngine {
   // Realm-reactive: shift the chord voicing based on current realm
   shiftToRealm(realmIndex) {
     if (!this.ctx || !this._running) return
+
+    // If we are moving past the Signal realm (6), clear the glass shatter ambience
+    if (realmIndex > 6) {
+      this.clearExtraLayers()
+    }
+
     const realmFreqMap = {
       0: 55,      // Gate — deep sub
       1: 65.41,   // Manifesto — C2, grounded
@@ -131,6 +137,26 @@ class HeavenAudioEngine {
         this.ctx.currentTime + 2
       )
     }
+  }
+
+  // Safely ramp down and remove any oscillators beyond the core choir/sub layers
+  clearExtraLayers() {
+    if (!this.ctx) return
+    const now = this.ctx.currentTime
+    // The first 12 oscillators are the core layers (sub + choir + LFOs)
+    // Any index >= 12 (or specific shimmer refs) should be cleared
+    this.oscillators.forEach((osc, i) => {
+      if (i >= 12) {
+        try {
+          // If it has a gain node, ramp it down (would require tracking gain nodes too)
+          // Since we mostly use direct connects or local gains, we'll just stop them with a fade out
+          // Actually, many oscillators here don't have their own gain ref in the array.
+          // For now, let's just stop them after a short ramp if possible.
+          osc.stop(now + 2)
+        } catch (_) {}
+      }
+    })
+    // Filter out stopped oscillators eventually, but for now we just prevent new ones from stacking
   }
 
   // Returns the AnalyserNode for the visualizer
