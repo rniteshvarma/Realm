@@ -12,5 +12,5 @@ void main() {
   // High-intensity palette for maximum visibility on black
   vec3 color = mix(vec3(0.98, 0.98, 1.0), vec3(0.0, 0.9, 1.0), vRandom * 0.4);
 
-  gl_FragColor = vec4(color, alpha * (0.6 + vRandom * 0.4));
+  gl_FragColor = vec4(color, alpha * (0.8 + vRandom * 0.2));
 }

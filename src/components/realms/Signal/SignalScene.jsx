@@ -8,6 +8,7 @@ import { Reflector as ThreeReflector } from 'three/examples/jsm/objects/Reflecto
 
 import { useStore } from '../../../store/useStore'
 import { getLenis } from '../../../hooks/useScroll'
+import { SETTINGS } from '../../../utils/deviceTier'
 import heavenEngine from '../../../audio/HeavenAudioEngine'
 import { generateShards } from './FractureGenerator'
 import { OrigamiCrane, NavigationCompass, CodeFragment } from './Objects'
@@ -16,9 +17,9 @@ import mirrorDistortionFrag from '../../../gl/shaders/mirrorDistortion.frag.glsl
 import mirrorDistortionVert from '../../../gl/shaders/mirrorDistortion.vert.glsl?raw'
 import './Signal.css'
 
-// ── Floating Dust Particles ──
 function GlassDustParticles() {
-  const count = 200
+  const performanceLow = useStore(state => state.performanceLow)
+  const count = performanceLow ? 60 : 200
   const meshRef = useRef()
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3)
@@ -101,7 +102,8 @@ function TheLookingGlass({ scrollProgress, shatterTriggered, onMirrorClick }) {
       tDiffuse: { value: null },
       uClarity: { value: 0 },
       uHandPos: { value: handPos.current },
-      uHandIntensity: { value: 0 }
+      uHandIntensity: { value: 0 },
+      uOpacity: { value: 1.0 }
     },
     vertexShader: mirrorDistortionVert,
     fragmentShader: mirrorDistortionFrag,
@@ -112,11 +114,13 @@ function TheLookingGlass({ scrollProgress, shatterTriggered, onMirrorClick }) {
     if (!mirrorWrapperRef.current) return
     const geo = new THREE.PlaneGeometry(3, 5)
     
+    const performanceLow = useStore.getState().performanceLow
+    
     // Create the raw 3JS Reflector
     const mirror = new ThreeReflector(geo, {
       clipBias: 0.003,
-      textureWidth: window.innerWidth * window.devicePixelRatio,
-      textureHeight: window.innerHeight * window.devicePixelRatio,
+      textureWidth: window.innerWidth * (performanceLow ? 0.5 : window.devicePixelRatio),
+      textureHeight: window.innerHeight * (performanceLow ? 0.5 : window.devicePixelRatio),
       color: 0x889999
     })
     
@@ -171,43 +175,6 @@ function TheLookingGlass({ scrollProgress, shatterTriggered, onMirrorClick }) {
        // Generate shards and push to state
        const rawShards = generateShards(3, 5, 6, 8) // 48 shards
        setShards(rawShards)
-
-       // Animate shards
-       setTimeout(() => {
-           const shardMeshes = shardGroupRef.current?.children || []
-           shardMeshes.forEach((mesh) => {
-              // Explosion vector based on centroid relative to center
-              const cx = mesh.userData.centroid.x
-              const cy = mesh.userData.centroid.y
-              const force = 1.0 + Math.random() * 2
-
-              gsap.to(mesh.position, {
-                  x: mesh.position.x + cx * force,
-                  y: mesh.position.y + cy * force - (3 + Math.random()*2), // gravity
-                  z: mesh.position.z + (Math.random()*2 + 1), // blast forward toward camera
-                  duration: 1.2 + Math.random() * 0.8,
-                  ease: 'power3.out'
-              })
-
-              gsap.to(mesh.rotation, {
-                  x: Math.random() * Math.PI * 4,
-                  y: Math.random() * Math.PI * 4,
-                  z: Math.random() * Math.PI * 4,
-                  duration: 1.5,
-                  ease: 'power2.out'
-              })
-
-              // Fade out
-              gsap.to(mesh.material, {
-                  opacity: 0,
-                  duration: 1.0,
-                  delay: 0.5 + Math.random()*0.5,
-                  onComplete: () => {
-                      mesh.visible = false
-                  }
-              })
-           })
-       }, 50)
     }
   }, [shatterTriggered, mirrorBroken])
 
@@ -221,24 +188,82 @@ function TheLookingGlass({ scrollProgress, shatterTriggered, onMirrorClick }) {
          onPointerOut={() => hoverState.current = false}
        />
 
-       {/* Shattered Pieces */}
-       {shards.length > 0 && (
-         <group ref={shardGroupRef}>
-            {shards.map((s, idx) => (
-                <mesh 
-                  key={idx} 
-                  geometry={s.geometry} 
-                  position={[s.centroid.x, s.centroid.y, 0]}
-                  userData={{ centroid: s.centroid }}
-                >
-                   {/* Shards hold a static copy of the reflective material */}
-                   <primitive object={customMaterial.clone()} attach="material" transparent opacity={0.9} />
-                </mesh>
-            ))}
-         </group>
-       )}
+        {/* Shattered Pieces */}
+        {shards.length > 0 && (
+          <group ref={shardGroupRef}>
+             {shards.map((s, idx) => (
+                 <GlassShard key={idx} shard={s} customMaterial={customMaterial} />
+             ))}
+          </group>
+        )}
     </group>
   )
+}
+
+// ── Individual Shard Component ──
+function GlassShard({ shard, customMaterial }) {
+    const meshRef = useRef()
+    
+    // Create unique uniforms for this shard, but share the texture and time references
+    const uniforms = useMemo(() => ({
+        uTime: customMaterial.uniforms.uTime,
+        tDiffuse: customMaterial.uniforms.tDiffuse,
+        uClarity: customMaterial.uniforms.uClarity,
+        uHandPos: customMaterial.uniforms.uHandPos,
+        uHandIntensity: customMaterial.uniforms.uHandIntensity,
+        uOpacity: { value: 0.9 }
+    }), [customMaterial])
+
+    useEffect(() => {
+        if (!meshRef.current) return
+        
+        // Animation
+        const cx = shard.centroid.x
+        const cy = shard.centroid.y
+        const force = 1.0 + Math.random() * 2
+
+        gsap.to(meshRef.current.position, {
+            x: meshRef.current.position.x + cx * force,
+            y: meshRef.current.position.y + cy * force - (3 + Math.random()*2),
+            z: meshRef.current.position.z + (Math.random()*2 + 1),
+            duration: 1.2 + Math.random() * 0.8,
+            ease: 'power3.out'
+        })
+
+        gsap.to(meshRef.current.rotation, {
+            x: Math.random() * Math.PI * 4,
+            y: Math.random() * Math.PI * 4,
+            z: Math.random() * Math.PI * 4,
+            duration: 1.5,
+            ease: 'power2.out'
+        })
+
+        // Fade out unique uniform
+        gsap.to(uniforms.uOpacity, {
+            value: 0,
+            duration: 1.0,
+            delay: 0.5 + Math.random()*0.5,
+            onComplete: () => {
+                if (meshRef.current) meshRef.current.visible = false
+            }
+        })
+    }, [shard, uniforms])
+
+    return (
+        <mesh 
+          ref={meshRef}
+          geometry={shard.geometry} 
+          position={[shard.centroid.x, shard.centroid.y, 0]}
+        >
+            <shaderMaterial 
+                attach="material"
+                uniforms={uniforms}
+                vertexShader={customMaterial.vertexShader}
+                fragmentShader={customMaterial.fragmentShader}
+                transparent
+            />
+        </mesh>
+    )
 }
 
 // ── Contact Objects Post-Shatter ──
@@ -295,13 +320,11 @@ function EmergedObjects({ visible }) {
              position={[-2.5, 0, 0]} 
              hovered={hoveredA} 
              rotationOffset={Math.PI / 4}
-             onClick={() => explodeAndOpen('mailto:rniteshvarma@gmail.com')} 
            />
            {/* Wrap the compass in pointer events */}
            <group 
              onPointerOver={() => handleHover('B', true)}
              onPointerOut={() => handleHover('B', false)}
-             onClick={handleCompassClick}
            >
              <NavigationCompass 
                position={[0, 0, 0]} 
@@ -314,7 +337,6 @@ function EmergedObjects({ visible }) {
            <group
              onPointerOver={() => handleHover('C', true)}
              onPointerOut={() => handleHover('C', false)}
-             onClick={() => explodeAndOpen('https://github.com/rniteshvarma')}
            >
              <CodeFragment 
                position={[2.5, 0, 0]} 
@@ -342,6 +364,7 @@ export default function SignalScene() {
   
   const [scrollProgress, setScrollProgress] = useState(0)
   const [shattered, setShattered] = useState(false)
+  const setSignalShattered = useStore(s => s.setSignalShattered)
   const [objectsVisible, setObjectsVisible] = useState(false)
 
   useEffect(() => {
@@ -378,6 +401,7 @@ export default function SignalScene() {
   const handleShatter = () => {
     if (shattered) return
     setShattered(true)
+    setSignalShattered(true)
     setCursorState('default')
     
     // Audio Triggers
@@ -401,6 +425,11 @@ export default function SignalScene() {
   return (
     <div className="signal-realm" ref={containerRef}>
       
+      {/* REALM LABEL */}
+      <div className="signal-realm-label">
+        VI. THE LOOKING GLASS
+      </div>
+
       {/* ── Floating HTML Overlay Text ── */}
       <div className="approach-text-container">
          <div className={`approach-line ${scrollProgress > 0.15 && scrollProgress < 0.35 ? 'visible' : ''}`}>
@@ -421,22 +450,12 @@ export default function SignalScene() {
          BREAK THE GLASS TO MOVE FORWARD.
       </div>
 
-      {objectsVisible && (
-         <div className="floor-inscription">
-            EVERY GREAT COLLABORATION BEGINS WITH HELLO.
-         </div>
-      )}
 
-      {objectsVisible && (
-         <div className="looking-glass-footer">
-            REALM IV — THE LOOKING GLASS — {new Date().getFullYear()} — HAND-CODED IN THE DARK
-         </div>
-      )}
 
       {/* ── 3D Context ── */}
       <Canvas
-        gl={{ antialias: true, alpha: false }}
-        dpr={[1, 1.5]}
+        gl={{ antialias: SETTINGS.TIER >= 2, alpha: false, powerPreference: 'high-performance', stencil: false }}
+        dpr={[0.85, SETTINGS.pixelRatio]}
         style={{ position: 'absolute', inset: 0 }}
       >
         <PerspectiveCamera makeDefault position={[0, 2.5, 0]} fov={60} />

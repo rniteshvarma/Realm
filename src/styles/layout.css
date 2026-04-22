@@ -10,29 +10,45 @@
   position: relative;
 }
 
+.realm-loader-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--void);
+}
+
 /* Explicit Heights to pre-allocate GSAP Pin Spacers (Prevents premature triggering) */
 /* Realm 2 (The Forge) — 600vh scrub travel */
 .realm-2 {
   height: calc(100vh + 6000px);
 }
-/* Realm 3 (The Cartography) — 5 orbital zones × 400vh + 200vh intro/outro */
+
+/* Realm 3 (The Cartography) — 4 orbital zones × 400vh + 200vh intro/outro */
 .realm-3 {
-  height: 2200vh;
+  height: 1800vh;
 }
+
+/* Realm 4 (The Nebula) — 600vh: Entry + 5 Morphs + Supernova + Silence */
 .realm-4 {
-  height: 400vh;
-}
-/* Realm 5 (The Nebula) — 600vh: Entry + 5 Morphs + Supernova + Silence */
-.realm-5 {
   height: 600vh;
 }
-.realm-6 {
+
+/* Realm 5 (The Frequency) — 500vh */
+.realm-5 {
   height: 500vh;
 }
 
-/* Realm 7 (Myth Engine) — horizontal, pinned */
-.realm-7 {
+/* Realm 6 (The Looking Glass) — 400vh scrub travel */
+.realm-6 {
   height: 400vh;
+}
+
+/* Realm 7 (Transcendence) — 300vh finale travel */
+.realm-7 {
+  height: 300vh;
+}
+
+.realm-8 {
+  height: 300vh;
 }
 
 /* ── Realm 2 (The Forge) — no tunnel, full-screen canvas ── */

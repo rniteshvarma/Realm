@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useStore } from '../../../store/useStore'
+import { SETTINGS } from '../../../utils/deviceTier'
 import heavenEngine from '../../../audio/HeavenAudioEngine'
 import { sfxSacredReveal } from '../../../audio/SFXLibrary'
 import './Frequency.css'
@@ -13,31 +14,31 @@ import './Frequency.css'
 const SEGMENTS = [
   {
     name: 'PERCEIVE',
-    desc: 'I absorb without judgment.\nEverything is signal — conversation,\nfriction, silence. The problem\nreveals itself if you listen.',
+    desc: 'Every product starts with being in the room.\nNot the meeting room. The actual room —\nfactory floor, university office,\nhospital hallway. Where the problem lives.',
     colorA: new THREE.Color('#3B0080'),   // ultraviolet
     colorB: new THREE.Color('#4B0082'),   // deep indigo
   },
   {
     name: 'RESEARCH',
-    desc: 'I map the territory.\nWho has walked here before?\nWhat constraints are real\nversus inherited?',
+    desc: 'Data tells you what. Users tell you why.\nThe best product decisions happen when\nboth are in the same sentence.',
     colorA: new THREE.Color('#4B0082'),
     colorB: new THREE.Color('#00AAFF'),   // electric blue
   },
   {
     name: 'SYNTHESIZE',
-    desc: 'Disparate signals collapse\ninto a single idea.\nThis is where the work\nactually begins.',
+    desc: 'This is the hard part — the moment you\nthrow away 80% of what you learned\nand find the one thread that actually matters.',
     colorA: new THREE.Color('#00AAFF'),
     colorB: new THREE.Color('#00F5FF'),   // teal
   },
   {
     name: 'BUILD',
-    desc: 'The prototype is the argument.\nI make things to think.\nEvery commit is a hypothesis\nwaiting to be disproven.',
+    desc: 'Not delegate. Build. Even now, even at\nthe strategy level — the best product\nleaders are the ones who can still\nroll up their sleeves and ship.',
     colorA: new THREE.Color('#00F5FF'),
     colorB: new THREE.Color('#C9A84C'),   // gold
   },
   {
     name: 'RELEASE',
-    desc: 'Letting go is a skill.\nThe work becomes itself\nwhen it meets the world.\nI stay curious about what\nit becomes without me.',
+    desc: 'Shipping is an act of humility.\nYou will be wrong about some of it.\nThe users will show you exactly which parts.\nAnd then you go again.',
     colorA: new THREE.Color('#C9A84C'),
     colorB: new THREE.Color('#FFFFFF'),   // pure white → dissolves
   },
@@ -278,7 +279,7 @@ export default function FrequencyScene() {
   return (
     <div className="frequency-realm" ref={containerRef}>
       <div className="freq-header">
-        <span className="freq-label">VI — THE FREQUENCY</span>
+        <span className="freq-label">V — THE FREQUENCY</span>
         <span className="freq-sub">PROCESS / HOW I WORK</span>
       </div>
 
@@ -295,8 +296,8 @@ export default function FrequencyScene() {
       </div>
 
       <Canvas
-        gl={{ antialias: true, alpha: false }}
-        dpr={[1, 1.5]}
+        gl={{ antialias: SETTINGS.TIER >= 2, alpha: false, powerPreference: 'high-performance', stencil: false }}
+        dpr={[1, SETTINGS.pixelRatio]}
         style={{ position: 'absolute', inset: 0 }}
       >
         <FreqScene scrollProgress={scrollProg} />

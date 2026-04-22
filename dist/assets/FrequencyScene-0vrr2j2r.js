@@ -1,4 +1,4 @@
-import{r as c,u as E,S as F,j as e,c as u,C as b,d as w,a as v}from"./index-C6A6qjDW.js";import{s as T}from"./SFXLibrary-6BG-H-NV.js";import{P as I}from"./PerspectiveCamera-CBY1_SN-.js";import{T as y}from"./Text-Dun43wfy.js";import"./Fbo-CHV-28Jx.js";const d=[{name:"PERCEIVE",desc:`I absorb without judgment.
+import{r as c,u as E,S as F,j as e,c as u,C as b,d as w,a as v}from"./index-CIeHNeq0.js";import{s as T}from"./SFXLibrary-DNUHASLa.js";import{P as I}from"./PerspectiveCamera-DE9pibGa.js";import{T as y}from"./Text-DWZWlkur.js";import"./Fbo-Bw4Tt_vM.js";const d=[{name:"PERCEIVE",desc:`I absorb without judgment.
 Everything is signal — conversation,
 friction, silence. The problem
 reveals itself if you listen.`,colorA:new u("#3B0080"),colorB:new u("#4B0082")},{name:"RESEARCH",desc:`I map the territory.

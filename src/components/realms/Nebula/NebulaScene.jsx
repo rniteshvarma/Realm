@@ -1,6 +1,8 @@
 import { useRef, useState, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useStore } from '../../../store/useStore'
+import { SETTINGS } from '../../../utils/deviceTier'
 
 import NebulaParticles from './NebulaParticles'
 import './Nebula.css'
@@ -53,7 +55,7 @@ export default function NebulaScene() {
             powerPreference: 'high-performance',
             stencil: false
           }}
-          dpr={[1, Math.min(window.devicePixelRatio, 2)]}
+          dpr={[0.85, SETTINGS.pixelRatio]}
           frameloop="always"
         >
           <NebulaInner 
@@ -64,7 +66,7 @@ export default function NebulaScene() {
 
         {/* Persistent UI Overlay */}
         <div className="nebula-realm-label" aria-hidden="true">
-          V. THE NEBULA
+          IV. THE NEBULA
         </div>
 
         <div className="nebula-act-dots" aria-hidden="true">

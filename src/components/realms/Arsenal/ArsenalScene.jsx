@@ -11,6 +11,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import * as THREE from 'three'
 import { getLenis } from '../../../hooks/useScroll'
 import { useStore } from '../../../store/useStore'
+import { SETTINGS } from '../../../utils/deviceTier'
 import './Arsenal.css'
 
 import containmentVert from '../../../gl/shaders/containmentField.vert.glsl?raw'
@@ -22,91 +23,113 @@ import voronoiFrag from '../../../gl/shaders/voronoiSphere.frag.glsl?raw'
 // ─── Discipline data ────────────────────────────────────────────────────────
 const DISCIPLINES = [
   {
-    id: 'design',
-    name: 'DESIGN',
-    description: 'Building interfaces where every pixel has a reason to exist.',
-    depth: '5 years crafting visual systems',
+    id: 'product',
+    name: 'PRODUCT',
+    description: 'Finding the exact intersection of what users need and what the business can sustain.',
+    depth: '5 years steering vision',
     color: new THREE.Color(0x7B2FBE),     // plasma purple
     baseFreq: 196,  // G3
     position: new THREE.Vector3(-10, -1.5, 4),
     nodeType: 'blob',
     skills: [
-      { name: 'UI/UX Design', desc: 'Designing experiences that feel inevitable', level: 'FLUENT', related: ['Design Systems', 'Motion Design'] },
-      { name: 'Design Systems', desc: 'Building languages the whole team can speak', level: 'MASTER', related: ['UI/UX Design', 'Typography'] },
-      { name: 'Typography', desc: 'Treating type as a first-class design material', level: 'FLUENT', related: ['Design Systems', 'Brand Identity'] },
-      { name: 'Motion Design', desc: 'Making transitions that teach the interface', level: 'CAPABLE', related: ['UI/UX Design', 'Design Systems'] },
-      { name: 'Brand Identity', desc: 'Giving products a voice they carry everywhere', level: 'CAPABLE', related: ['Typography', 'UI/UX Design'] },
+      { name: '0 to 1 Launch', level: 'MASTER' },
+      { name: 'Roadmap Strategy', level: 'MASTER' },
+      { name: 'User Discovery', level: 'FLUENT' },
+      { name: 'Go-to-Market', level: 'CAPABLE' },
+      { name: 'Metrics & Analytics', level: 'FLUENT' },
+      { name: 'Pricing Strategy', level: 'CAPABLE' },
+      { name: 'Stakeholder Alignment', level: 'MASTER' },
+      { name: 'B2B SaaS', level: 'MASTER' },
+      { name: 'Hardware/IoT', level: 'CAPABLE' },
+      { name: 'Growth Loops', level: 'FLUENT' }
     ],
   },
   {
     id: 'engineering',
     name: 'ENGINEERING',
-    description: 'Writing code that performs, scales, and ages well.',
-    depth: '6 years building production systems',
+    description: 'I don\'t just write tickets. I write code. The prototype is the argument.',
+    depth: '6 years shipping production systems',
     color: new THREE.Color(0x00F5FF),     // neural teal
     baseFreq: 220,  // A3
     position: new THREE.Vector3(10, 2.0, 0),
     nodeType: 'rings',
     skills: [
-      { name: 'React', desc: 'Components as the atomic unit of thought', level: 'MASTER', related: ['TypeScript', 'Performance'] },
-      { name: 'Three.js', desc: 'Turning math into light people can touch', level: 'FLUENT', related: ['WebGL/GLSL', 'React'] },
-      { name: 'WebGL/GLSL', desc: 'Writing directly to the GPU in its own language', level: 'FLUENT', related: ['Three.js', 'Creative Tech'] },
-      { name: 'Node.js', desc: 'APIs that communicate what they mean', level: 'FLUENT', related: ['REST APIs', 'TypeScript'] },
-      { name: 'TypeScript', desc: 'Types as documentation that never goes stale', level: 'MASTER', related: ['React', 'Node.js'] },
-      { name: 'REST APIs', desc: 'Contracts between systems that hold under pressure', level: 'FLUENT', related: ['Node.js', 'Performance'] },
-      { name: 'Performance', desc: 'The 60fps imperative — no frame goes wasted', level: 'CAPABLE', related: ['React', 'WebGL/GLSL'] },
+      { name: 'React / Next.js', level: 'MASTER' },
+      { name: 'TypeScript', level: 'MASTER' },
+      { name: 'Node.js', level: 'FLUENT' },
+      { name: 'Python', level: 'FLUENT' },
+      { name: 'System Architecture', level: 'FLUENT' },
+      { name: 'WebGL / Three.js', level: 'CAPABLE' },
+      { name: 'AWS / GCP', level: 'CAPABLE' },
+      { name: 'CI/CD Pipelines', level: 'FLUENT' },
+      { name: 'Database Design', level: 'FLUENT' },
+      { name: 'API Development', level: 'MASTER' }
     ],
   },
   {
-    id: 'creative',
-    name: 'CREATIVE TECH',
-    description: 'Making code behave like art and art behave like code.',
-    depth: '4 years in generative territory',
+    id: 'ai-data',
+    name: 'AI & DATA',
+    description: 'Turning hype into actual utility. Making models solve real problems.',
+    depth: '3 years integrating intelligence',
     color: new THREE.Color(0xC9A84C),     // gold
     baseFreq: 246.94, // B3
     position: new THREE.Vector3(0, 5.0, -8),
     nodeType: 'fractal',
     skills: [
-      { name: 'Generative Art', desc: 'Algorithms that make decisions I would not', level: 'FLUENT', related: ['WebGL/GLSL', 'Creative Coding'] },
-      { name: 'WebGL Shaders', desc: 'Painting with math on silicon canvases', level: 'FLUENT', related: ['Generative Art', 'Real-time 3D'] },
-      { name: 'Creative Coding', desc: 'Tools as medium; output as artifact', level: 'MASTER', related: ['Generative Art', 'Interactive Installs'] },
-      { name: 'Real-time 3D', desc: 'Worlds that exist only while you watch', level: 'FLUENT', related: ['WebGL Shaders', 'Three.js'] },
-      { name: 'Interactive Installs', desc: 'Spaces that respond to presence', level: 'CAPABLE', related: ['Creative Coding', 'Real-time 3D'] },
+      { name: 'LLM Orchestration', level: 'FLUENT' },
+      { name: 'Prompt Engineering', level: 'MASTER' },
+      { name: 'RAG Systems', level: 'FLUENT' },
+      { name: 'Agentic Workflows', level: 'CAPABLE' },
+      { name: 'Predictive Models', level: 'CAPABLE' },
+      { name: 'Vector Databases', level: 'FLUENT' },
+      { name: 'Data Pipelines', level: 'FLUENT' },
+      { name: 'Computer Vision', level: 'CAPABLE' },
+      { name: 'AI Ethics & Safety', level: 'FLUENT' },
+      { name: 'Fine-tuning', level: 'CAPABLE' }
     ],
   },
   {
-    id: 'strategy',
-    name: 'STRATEGY',
-    description: 'Connecting what users need to what products can become.',
-    depth: '4 years thinking in systems',
+    id: 'leadership',
+    name: 'LEADERSHIP',
+    description: 'Protecting the team\'s focus. Taking the blame. Passing the credit.',
+    depth: '4 years scaling teams',
     color: new THREE.Color(0xF0EDE8),     // ghost white
     baseFreq: 261.63, // C4
     position: new THREE.Vector3(-8, -3.0, -6),
     nodeType: 'voronoi',
     skills: [
-      { name: 'Product Thinking', desc: 'Asking what the problem is before solving it', level: 'FLUENT', related: ['User Research', 'Prototyping'] },
-      { name: 'User Research', desc: 'Listening for the need behind the request', level: 'CAPABLE', related: ['Product Thinking', 'Workshop Lead'] },
-      { name: 'Prototyping', desc: 'Making assumptions tangible before they cost you', level: 'FLUENT', related: ['Product Thinking', 'Creative Direction'] },
-      { name: 'Creative Direction', desc: 'Holding the vision while others build', level: 'CAPABLE', related: ['Prototyping', 'Product Thinking'] },
-      { name: 'Workshop Lead', desc: 'Designing sessions where alignment actually happens', level: 'CAPABLE', related: ['User Research', 'Creative Direction'] },
+      { name: 'Agile Coaching', level: 'MASTER' },
+      { name: 'Hiring & Scaling', level: 'FLUENT' },
+      { name: 'Cross-functional Comms', level: 'MASTER' },
+      { name: 'Conflict Resolution', level: 'FLUENT' },
+      { name: 'Resource Planning', level: 'FLUENT' },
+      { name: 'Vendor Management', level: 'CAPABLE' },
+      { name: 'Process Design', level: 'MASTER' },
+      { name: 'Performance Reviews', level: 'CAPABLE' },
+      { name: 'Remote Team Culture', level: 'FLUENT' },
+      { name: 'Budget Ownership', level: 'CAPABLE' }
     ],
   },
   {
     id: 'craft',
     name: 'CRAFT',
-    description: 'The instruments — chosen with care, wielded with precision.',
+    description: 'The tools of the trade. Mastered through daily repetition.',
     depth: 'Sharp tools, daily practice',
     color: new THREE.Color(0xC8A97E),     // amber/silver mix
     baseFreq: 293.66, // D4
     position: new THREE.Vector3(8, -4.0, -4),
     nodeType: 'shards',
     skills: [
-      { name: 'Figma', desc: 'Where ideas become decisions become handoffs', level: 'MASTER', related: ['Design Systems', 'Prototyping'] },
-      { name: 'Blender', desc: 'Sculpting forms that live in 3D space', level: 'CAPABLE', related: ['Three.js', 'Real-time 3D'] },
-      { name: 'GSAP', desc: 'Animation that means something, every frame', level: 'MASTER', related: ['Motion Design', 'React'] },
-      { name: 'Git', desc: 'History as a first draft, not an archive', level: 'FLUENT', related: ['Node.js', 'TypeScript'] },
-      { name: 'Photoshop', desc: 'Pixel-level decisions when they matter', level: 'FLUENT', related: ['Brand Identity', 'UI/UX Design'] },
-      { name: 'Premiere', desc: 'Story told through the cut', level: 'CAPABLE', related: ['Motion Design', 'Creative Direction'] },
+      { name: 'Figma', level: 'MASTER' },
+      { name: 'Jira / Linear', level: 'MASTER' },
+      { name: 'SQL', level: 'FLUENT' },
+      { name: 'Mixpanel / Amplitude', level: 'FLUENT' },
+      { name: 'Notion / Confluence', level: 'MASTER' },
+      { name: 'Git', level: 'MASTER' },
+      { name: 'Cursor / Copilot', level: 'FLUENT' },
+      { name: 'Postman', level: 'FLUENT' },
+      { name: 'Blender', level: 'CAPABLE' },
+      { name: 'Photoshop', level: 'FLUENT' }
     ],
   },
 ]
@@ -385,8 +408,9 @@ class SpringNode {
 }
 
 // ─── GPGPU-lite Particle System ──────────────────────────────────────────────
-const PARTICLE_COUNT = 0
 function createParticleSystem(scene) {
+  const PARTICLE_COUNT = SETTINGS.forgeParticles
+
   const positions = new Float32Array(PARTICLE_COUNT * 3)
   const velocities = new Float32Array(PARTICLE_COUNT * 3)
   const colors = new Float32Array(PARTICLE_COUNT * 3)
@@ -493,7 +517,8 @@ function createParticleSystem(scene) {
 }
 
 // ─── Fractal Geometry helper ──────────────────────────────────────────────────
-function buildFractalGeometry(depth = 2) {
+function buildFractalGeometry(depth = 2, performanceLow = false) {
+  const finalDepth = performanceLow ? Math.max(1, depth - 1) : depth
   const verts = []
   function tetra(p0, p1, p2, p3, d) {
     if (d === 0) {
@@ -519,7 +544,7 @@ function buildFractalGeometry(depth = 2) {
     new THREE.Vector3(-s,-s, s),
     new THREE.Vector3(-s, s,-s),
     new THREE.Vector3(s,-s,-s),
-    depth
+    finalDepth
   )
   const geo = new THREE.BufferGeometry()
   geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3))
@@ -534,6 +559,7 @@ function ForgeScene({
   onNodeActivate, dragEnabled, audioRef
 }) {
   const { scene, camera, gl } = useThree()
+  const performanceLow = useStore(state => state.performanceLow)
   const nodeGroupsRef = useRef([])
   const wallsRef = useRef([])
   const wallMatsRef = useRef([])
@@ -631,7 +657,7 @@ function ForgeScene({
 
       if (disc.nodeType === 'blob') {
         // Icosahedron with custom morph shader
-        const geo = new THREE.IcosahedronGeometry(1.5, 4)
+        const geo = new THREE.IcosahedronGeometry(1.5, performanceLow ? 2 : 4)
         const mat = new THREE.ShaderMaterial({
           vertexShader: blobVert,
           fragmentShader: blobFrag,
@@ -647,7 +673,7 @@ function ForgeScene({
 
       } else if (disc.nodeType === 'rings') {
         // Dark core + nested wireframe rings
-        const coreGeo = new THREE.SphereGeometry(0.8, 16, 16)
+        const coreGeo = new THREE.SphereGeometry(0.8, performanceLow ? 12 : 16, performanceLow ? 12 : 16)
         const coreMat = new THREE.MeshStandardMaterial({ color: 0x050810, metalness: 1, roughness: 0.2 })
         coreMesh = new THREE.Mesh(coreGeo, coreMat)
         group.add(coreMesh)
@@ -658,7 +684,7 @@ function ForgeScene({
           { r: 1.6, tube: 0.03, rx: 0.5, ry: 0.5, rz: 0, speed: -1.1 },
         ]
         ringData.forEach(rd => {
-          const rGeo = new THREE.TorusGeometry(rd.r, rd.tube, 8, 48)
+          const rGeo = new THREE.TorusGeometry(rd.r, rd.tube, 8, performanceLow ? 32 : 48)
           const rMat = new THREE.MeshStandardMaterial({
             color: disc.color, emissive: disc.color, emissiveIntensity: 0.8,
             wireframe: true,
@@ -670,7 +696,7 @@ function ForgeScene({
         })
 
       } else if (disc.nodeType === 'fractal') {
-        const geo = buildFractalGeometry(2)
+        const geo = buildFractalGeometry(2, performanceLow)
         const mat = new THREE.MeshStandardMaterial({
           color: disc.color, emissive: disc.color, emissiveIntensity: 0.4,
           wireframe: false, side: THREE.DoubleSide,
@@ -693,7 +719,7 @@ function ForgeScene({
         group.add(rPoints)
 
       } else if (disc.nodeType === 'voronoi') {
-        const geo = new THREE.SphereGeometry(1.5, 64, 64)
+        const geo = new THREE.SphereGeometry(1.5, performanceLow ? 32 : 64, performanceLow ? 32 : 64)
         const mat = new THREE.ShaderMaterial({
           vertexShader: `
             varying vec2 vUv; varying vec3 vNormal;
@@ -757,7 +783,7 @@ function ForgeScene({
         ).normalize()
         const radius = 5 + Math.random() * 3
         const particleMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.12, 8, 8),
+          new THREE.SphereGeometry(0.12, performanceLow ? 4 : 8, performanceLow ? 4 : 8),
           new THREE.MeshStandardMaterial({ color: disc.color, emissive: disc.color, emissiveIntensity: 1.0 })
         )
         particleMesh.position.copy(dir.multiplyScalar(radius))
@@ -1264,8 +1290,8 @@ export default function ArsenalScene() {
   // Removing rogue tryStart effect that was forcing audio start globally.
 
   // Convergence text animation helper
-  const convergenceLine1 = 'YOUR DISCIPLINES DON\'T COMPETE.'
-  const convergenceLine2 = 'THEY CONSPIRE.'
+  const convergenceLine1 = 'THE RAREST SKILL IS KNOWING WHAT TO BUILD.'
+  const convergenceLine2 = 'THE SECOND RAREST IS ACTUALLY BUILDING IT.'
 
   return (
     <div className="forge-container" ref={containerRef}>
@@ -1274,8 +1300,8 @@ export default function ArsenalScene() {
         ref={canvasRef}
         onMouseMove={handleCanvasMouseMove}
         style={{ position: 'absolute', inset: 0 }}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-        dpr={Math.min(window.devicePixelRatio, 2)}
+        gl={{ antialias: SETTINGS.TIER >= 2, alpha: false, powerPreference: 'high-performance', stencil: false }}
+        dpr={[0.85, SETTINGS.pixelRatio]}
       >
         <ForgeScene
           scrollProgress={scrollProgressRef}

@@ -2,7 +2,8 @@ import { create } from 'zustand'
 
 export const useStore = create((set, get) => ({
   // ── Realm state ──────────────────────────────────────
-  realm: 0,           // 0=Gate 1=Manifesto 2=Arsenal 3=Archive 4=Signal 5–8=New Realms
+  // 0=Gate 1=Manifesto 2=Forge 3=Cartography 4=Nebula 5=Frequency 6=LookingGlass
+  realm: 0,
   setRealm: (realm) => set({ realm }),
 
   // ── Loading state ────────────────────────────────────
@@ -23,13 +24,15 @@ export const useStore = create((set, get) => ({
 
   // ── Performance mode ─────────────────────────────────
   performanceLow: false,
+  quality: 'HIGH', // 'AUTO' | 'LOW' | 'HIGH'
   setPerformanceLow: (v) => set({ performanceLow: v }),
+  setQuality: (q) => set({ quality: q }),
 
   // ── Mouse position (normalized 0-1) ──────────────────
   mouse: { x: 0.5, y: 0.5 },
   setMouse: (x, y) => set({ mouse: { x, y } }),
 
-  // ── Project state (Realm 3) ──────────────────────────
+  // ── Project state (Realm 3 — Cartography) ────────────
   activeProject: null, // null | { id, title, role, image }
   setActiveProject: (project) => set({ activeProject: project }),
 
@@ -40,15 +43,18 @@ export const useStore = create((set, get) => ({
   })),
 
   // ── Lore / Easter Egg System ─────────────────────────
-  // Egg IDs: 'patient' | 'morse' | 'ninth-stone' | 'freq-ghost' | 'observer'
+  // Egg IDs: 'patient' | 'morse' | 'freq-ghost' | 'observer'
   loreEggs: {
-    patient: false,       // Egg 1: Manifesto — idle 12s → ghost word
-    morse: false,         // Egg 2: Signal — triple-click center
-    'ninth-stone': false, // Egg 3: Myth Engine — click Metatron cube
-    'freq-ghost': false,  // Egg 4: Frequency — full 5-segment scroll
-    observer: false,      // Egg 5: Loading — wait 33s before clicking
+    patient:    false, // Egg 1: Manifesto — idle 12s → ghost word
+    morse:      false, // Egg 2: Looking Glass — triple-click compass
+    'freq-ghost': false, // Egg 3: Frequency — full 5-segment scroll
+    observer:   false, // Egg 4: Loading — wait 33s before clicking
   },
   allEggsFound: false,
+
+  // ── Realm VI — Signal / Looking Glass ─────────────
+  signalShattered: false,
+  setSignalShattered: (v) => set({ signalShattered: v }),
 
   discoverEgg: (eggId) => set((s) => {
     if (s.loreEggs[eggId]) return {} // already found
@@ -56,8 +62,4 @@ export const useStore = create((set, get) => ({
     const allFound = Object.values(updated).every(Boolean)
     return { loreEggs: updated, allEggsFound: allFound }
   }),
-
-  // ── Hidden Realm IX access ───────────────────────────
-  realmIXUnlocked: false,
-  unlockRealmIX: () => set({ realmIXUnlocked: true }),
 }))

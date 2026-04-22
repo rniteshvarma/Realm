@@ -152,8 +152,8 @@ export function OrigamiCrane({ hovered, onClick, position, rotationOffset }) {
       </group>
       
       <UnfurlingText 
-         textPrimary="rniteshvarma@gmail.com" 
-         textSecondary="WRITE SOMETHING WORTH READING."
+         textPrimary="MANAGEMENT" 
+         textSecondary="FOR PROJECTS THAT SCALE."
          isHovered={hovered} 
       />
     </group>
@@ -222,8 +222,8 @@ export function NavigationCompass({ hovered, onClick, position, rotationOffset }
       </group>
       
       <UnfurlingText 
-         textPrimary="linkedin.com/in/niteshvarma" 
-         textSecondary="FIND YOUR BEARING."
+         textPrimary="UI/UX DESIGN" 
+         textSecondary="WHERE THE STORY COMES ALIVE."
          isHovered={hovered} 
       />
     </group>
@@ -235,7 +235,7 @@ export function CodeFragment({ hovered, onClick, position, rotationOffset }) {
   const meshRef = useRef()
   const ringRef = useRef()
   
-  const codeString = `/* \n  if (you.need(creativity)) {\n    return me.call();\n  }\n*/`
+  const codeString = `/*\n  if (you.need(creativity)) {\n    return me.call();\n  }\n*/`
 
   useFrame((state) => {
     if (!meshRef.current) return
@@ -283,12 +283,13 @@ export function CodeFragment({ hovered, onClick, position, rotationOffset }) {
         </mesh>
 
         <Text
-          position={[0, 0, 0.01]}
-          fontSize={0.08}
+          position={[0, 0, 0.02]}
+          fontSize={0.07}
           color="#00F5FF"
           anchorX="center"
           anchorY="middle"
           font={undefined} // default monospace
+          lineHeight={1.4}
         >
           {codeString}
         </Text>
@@ -300,8 +301,8 @@ export function CodeFragment({ hovered, onClick, position, rotationOffset }) {
       </group>
       
       <UnfurlingText 
-         textPrimary="github.com/niteshvarma" 
-         textSecondary="READ THE RECEIPTS."
+         textPrimary="DEVELOPMENT" 
+         textSecondary="LET'S MAKE SOMETHING REAL."
          isHovered={hovered} 
       />
     </group>

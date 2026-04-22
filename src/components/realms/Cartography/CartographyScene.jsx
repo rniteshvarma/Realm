@@ -350,17 +350,7 @@ function EntryTitle({ visible, onComplete }) {
 // ═══════════════════════════════════════════════════════════════════════
 //  TRANSIT CAPTION (between orbs)
 // ═══════════════════════════════════════════════════════════════════════
-function TransitCaption({ projectIndex, phase }) {
-  const visible = phase === 'escape' && projectIndex < PROJECTS.length - 1
-  const next    = PROJECTS[projectIndex + 1]
-  return (
-    <div className={`transit-caption ${visible ? 'visible' : ''}`}>
-      {visible && next && (
-        `PROJECT ${projectIndex + 1} OF ${PROJECTS.length} — ${next.title} AHEAD`
-      )}
-    </div>
-  )
-}
+// Removed TransitCaption component as it is now integrated into PersistentUI to prevent overlaps
 
 // ═══════════════════════════════════════════════════════════════════════
 //  PERSISTENT UI
@@ -368,6 +358,10 @@ function TransitCaption({ projectIndex, phase }) {
 function PersistentUI({ scrollProgress, projectIndex, phase, totalProjects }) {
   const progressFrac = scrollProgress
   const dimmed = phase === 'inside' || phase === 'descent'
+  
+  // Transit caption logic
+  const transitVisible = phase === 'escape' && projectIndex < totalProjects - 1
+  const nextProject = PROJECTS[projectIndex + 1]
 
   return (
     <>
@@ -391,10 +385,20 @@ function PersistentUI({ scrollProgress, projectIndex, phase, totalProjects }) {
         <span className="progress-label progress-label--bottom">END</span>
       </div>
 
-      {/* BOTTOM CENTER — scroll hint */}
-      <div className={`scroll-hint ${['orbit', 'escape'].includes(phase) ? 'visible' : ''}`}>
-        <span>{phase === 'orbit' ? 'SCROLL TO DESCEND' : 'SCROLL TO CONTINUE'}</span>
-        <div className="scroll-hint__arrow" />
+      {/* BOTTOM CENTER — Unified Stack */}
+      <div className={`scroll-hint-container ${['orbit', 'escape'].includes(phase) ? 'visible' : ''}`}>
+        {/* Project Transit Info */}
+        <div className={`transit-caption ${transitVisible ? 'visible' : ''}`}>
+          {transitVisible && nextProject && (
+            `PROJECT ${projectIndex + 1} OF ${totalProjects} — ${nextProject.title} AHEAD`
+          )}
+        </div>
+
+        {/* Scroll Instruction */}
+        <div className="scroll-hint">
+          <span>{phase === 'orbit' ? 'SCROLL TO DESCEND' : 'SCROLL TO CONTINUE'}</span>
+          <div className="scroll-hint__arrow" />
+        </div>
       </div>
     </>
   )
@@ -616,8 +620,6 @@ export default function CartographyScene() {
           phaseProgress={phaseProgress}
         />
 
-        {/* Transit caption */}
-        <TransitCaption projectIndex={projectIndex} phase={phase} />
 
         {/* Final map text */}
         {finalMap && (

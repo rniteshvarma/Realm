@@ -6,7 +6,7 @@
 /* ── Layout: Sticky Canvas container ─────────────────── */
 .cartography-scroll-space {
   width: 100%;
-  height: 100%;   /* fill the parent .realm-3 section (2200vh) */
+  height: 100%;   /* fill the parent .realm-3 section (1800vh) */
   position: relative;
 }
 
@@ -129,50 +129,60 @@
   transition: top 0.3s ease;
 }
 
-/* ── Scroll Hint ──────────────────────────────────────── */
-.scroll-hint {
+/* ── Bottom Center Unified UI Stack ──────────────────── */
+.scroll-hint-container {
   position: absolute;
-  bottom: 3rem;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 2rem;
+  padding-bottom: 3rem;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.8s cubic-bezier(0.2, 0, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0, 0.2, 1);
-  transform: translateX(-50%) translateY(10px);
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-50%) translateY(20px);
 }
 
-.scroll-hint.visible { 
-  opacity: 0.8; 
+.scroll-hint-container.visible { 
+  opacity: 1; 
   transform: translateX(-50%) translateY(0);
 }
 
+.scroll-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
 .scroll-hint span {
   font-family: var(--font-mono, 'Space Mono', monospace);
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   font-weight: 500;
-  letter-spacing: 0.5em; /* Spaced out for HUD feel */
+  letter-spacing: 0.6em; /* HUD style */
   color: var(--ghost, #f0f0f0);
   text-transform: uppercase;
   white-space: nowrap;
   display: block;
+  margin-right: -0.6em; /* Correction for letter-spacing to ensure absolute center */
+  opacity: 0.6;
 }
 
 .scroll-hint__arrow {
   width: 1px;
-  height: 40px;
+  height: 50px;
   background: linear-gradient(to bottom, var(--sacred, #C9A84C), transparent);
-  animation: scrollLinePulse 2s ease-in-out infinite;
+  animation: scrollLineDash 2s cubic-bezier(0.76, 0, 0.24, 1) infinite;
 }
 
-@keyframes scrollLinePulse {
-  0% { transform: scaleY(0.4); transform-origin: top; opacity: 0; }
-  50% { transform: scaleY(1); transform-origin: top; opacity: 0.8; }
-  100% { transform: scaleY(0.4); transform-origin: bottom; opacity: 0; }
+@keyframes scrollLineDash {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  40% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  60% { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
 }
 
 
@@ -369,13 +379,7 @@
   transition-duration: 1.2s;
 }
 
-/* ── Transit Caption ──────────────────────────────────── */
 .transit-caption {
-  position: absolute;
-  bottom: 6rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 90;
   font-family: var(--font-mono, monospace);
   font-size: 0.55rem;
   letter-spacing: 0.3em;

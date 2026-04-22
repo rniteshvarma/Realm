@@ -6,6 +6,7 @@ import { BlendFunction } from 'postprocessing'
 import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { useStore } from '../../../store/useStore'
+import { SETTINGS } from '../../../utils/deviceTier'
 
 import vertShader from '../../../gl/shaders/iridescent.vert.glsl?raw'
 import fragShader from '../../../gl/shaders/iridescent.frag.glsl?raw'
@@ -157,22 +158,27 @@ export default function HeroScene() {
       </div>
 
       <div className="manifesto-canvas-wrapper">
-        <Canvas gl={{ antialias: true, alpha: false }} dpr={[1, performanceLow ? 1 : 2]}>
+        <Canvas 
+          gl={{ antialias: SETTINGS.TIER >= 2, alpha: false, powerPreference: 'high-performance', stencil: false }}
+          dpr={[0.85, SETTINGS.pixelRatio]}
+        >
           <OrthographicCamera makeDefault position={[0, 0, 1]} left={-1} right={1} top={1} bottom={-1} near={0.1} far={10} /> 
           <IridescentBackground />
           
-          {!performanceLow && (
+          {SETTINGS.bloomEnabled && (
             <EffectComposer multisampling={0}>
               <Bloom 
-                intensity={1.2} 
+                intensity={SETTINGS.bloomIntensity} 
                 luminanceThreshold={0.2} 
                 luminanceSmoothing={0.9} 
                 blendFunction={BlendFunction.SCREEN} 
               />
-              <ChromaticAberration 
-                offset={[0.002, 0.002]} 
-                blendFunction={BlendFunction.NORMAL} 
-              />
+              {SETTINGS.chromaticAberr && (
+                <ChromaticAberration 
+                  offset={[0.002, 0.002]} 
+                  blendFunction={BlendFunction.NORMAL} 
+                />
+              )}
             </EffectComposer>
           )}
         </Canvas>
@@ -180,6 +186,7 @@ export default function HeroScene() {
 
       <div className="manifesto-content layer-content">
         <ManifestoText />
+        <p className="manifesto-subline">Product Manager&nbsp;·&nbsp;Co-founder&nbsp;·&nbsp;Builder</p>
         <div className="scroll-hint">
             <div className="waveform-line"></div>
         </div>

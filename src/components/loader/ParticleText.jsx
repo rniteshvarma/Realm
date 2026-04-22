@@ -1,6 +1,7 @@
 import { useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useStore } from '../../store/useStore'
 
 import vertShader from '../../gl/shaders/particles.vert.glsl?raw'
 import fragShader from '../../gl/shaders/particles.frag.glsl?raw'
@@ -8,6 +9,7 @@ import fragShader from '../../gl/shaders/particles.frag.glsl?raw'
 function Particles({ text }) {
   const pointsRef = useRef()
   const materialRef = useRef()
+  const performanceLow = useStore(state => state.performanceLow)
 
   // 1. Create a canvas texture for the text
   const texture = useMemo(() => {
@@ -35,7 +37,7 @@ function Particles({ text }) {
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data
     
     // Scale down particles for performance
-    const step = 4
+    const step = performanceLow ? 8 : 4
     const count = (canvas.width / step) * (canvas.height / step)
     
     const positions = new Float32Array(count * 3)
@@ -136,7 +138,12 @@ function Particles({ text }) {
 export default function ParticleTextComponent({ text }) {
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}>
-      <Canvas camera={{ position: [0, 0, 15], fov: 45 }} style={{ pointerEvents: 'none' }}>
+      <Canvas 
+        camera={{ position: [0, 0, 15], fov: 45 }} 
+        style={{ pointerEvents: 'none' }}
+        gl={{ antialias: false }}
+        dpr={useStore.getState().performanceLow ? 1 : Math.min(window.devicePixelRatio, 2)}
+      >
         <Particles text={text} />
       </Canvas>
     </div>

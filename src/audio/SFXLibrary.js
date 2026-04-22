@@ -158,3 +158,163 @@ export function sfxWarpUp() {
   osc.start()
   osc.stop(ctx.currentTime + 0.55)
 }
+
+// ── Realm VIII (Boneyard) SFX ──────────────────────────────────────────
+
+// Monolith shatter entry: white noise burst + sub-bass thud + micro-clicks
+export function sfxBoneyardShatter() {
+  const ctx = getCtx()
+  if (!ctx) return
+  const now = ctx.currentTime
+
+  // White noise 200ms
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1
+  const n = ctx.createBufferSource()
+  n.buffer = buf
+  const ng = ctx.createGain()
+  ng.gain.setValueAtTime(0.3, now)
+  ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.2)
+  n.connect(ng)
+  ng.connect(ctx.destination)
+  n.start(now)
+
+  // Sub-bass thud 60Hz, 800ms decay
+  const sub = ctx.createOscillator()
+  const sg = ctx.createGain()
+  sub.frequency.value = 60
+  sg.gain.setValueAtTime(0.4, now + 0.05)
+  sg.gain.exponentialRampToValueAtTime(0.0001, now + 0.85)
+  sub.connect(sg)
+  sg.connect(ctx.destination)
+  sub.start(now + 0.05)
+  sub.stop(now + 0.9)
+
+  // 8 staggered micro-clicks (fragment impacts) 1200Hz, 30ms each
+  for (let i = 0; i < 8; i++) {
+    const osc = ctx.createOscillator()
+    const g = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.value = 1200 + Math.random() * 400
+    const offset = 0.05 + i * 0.04 + Math.random() * 0.03
+    g.gain.setValueAtTime(0.04, now + offset)
+    g.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.03)
+    osc.connect(g)
+    g.connect(ctx.destination)
+    osc.start(now + offset)
+    osc.stop(now + offset + 0.04)
+  }
+}
+
+// Proximity ping triggered by approaching an asteroid
+// freq varies by rock size: large=220Hz, small=880Hz
+export function sfxBoneyardProximityPing(freq = 440, pan = 0) {
+  const ctx = getCtx()
+  if (!ctx) return
+  const now = ctx.currentTime
+
+  const osc = ctx.createOscillator()
+  const g = ctx.createGain()
+  const panner = ctx.createStereoPanner()
+  osc.type = 'sine'
+  osc.frequency.value = Math.max(80, Math.min(2000, freq))
+  panner.pan.value = Math.max(-1, Math.min(1, pan))
+  g.gain.setValueAtTime(0, now)
+  g.gain.linearRampToValueAtTime(0.06, now + 0.08)
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.48)
+  osc.connect(g)
+  g.connect(panner)
+  panner.connect(ctx.destination)
+  osc.start(now)
+  osc.stop(now + 0.5)
+}
+
+// Monument rock approach chord: 110+165+220Hz, 2s fadein, 4s fadeout
+export function sfxBoneyardMonumentChord() {
+  const ctx = getCtx()
+  if (!ctx) return
+  const now = ctx.currentTime
+  ;[110, 165, 220].forEach(freq => {
+    const osc = ctx.createOscillator()
+    const g = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.value = freq
+    g.gain.setValueAtTime(0, now)
+    g.gain.linearRampToValueAtTime(0.05, now + 2)
+    g.gain.setValueAtTime(0.05, now + 5)
+    g.gain.linearRampToValueAtTime(0, now + 9)
+    osc.connect(g)
+    g.connect(ctx.destination)
+    osc.start(now)
+    osc.stop(now + 10)
+  })
+}
+
+// ── Realm IX (Singularity) SFX ────────────────────────────────────────
+
+// Text reveal tones (textIndex 0–3)
+export function sfxSingularityTextReveal(textIndex = 0) {
+  const ctx = getCtx()
+  if (!ctx) return
+  const now = ctx.currentTime
+
+  const events = [
+    { freq: 528, dur: 4.0, vol: 0.08 },   // Name: love frequency
+    { freq: 396, dur: 2.0, vol: 0.06 },   // Title: minor
+    { freq: null, dur: 3.0, vol: 0.05 },  // Manifesto: chord
+    { freq: 174, dur: 0.5, vol: 0.12 },   // One word: depth charge
+  ]
+  const ev = events[textIndex % 4]
+  if (!ev) return
+
+  if (ev.freq === null) {
+    // Solfeggio chord: 396 + 528 + 639
+    ;[396, 528, 639].forEach(f => {
+      const osc = ctx.createOscillator()
+      const g = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = f
+      g.gain.setValueAtTime(0, now)
+      g.gain.linearRampToValueAtTime(ev.vol, now + 0.3)
+      g.gain.setValueAtTime(ev.vol, now + ev.dur)
+      g.gain.linearRampToValueAtTime(0, now + ev.dur + 1)
+      osc.connect(g)
+      g.connect(ctx.destination)
+      osc.start(now)
+      osc.stop(now + ev.dur + 1.5)
+    })
+  } else {
+    const osc = ctx.createOscillator()
+    const g = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.value = ev.freq
+    g.gain.setValueAtTime(0, now)
+    g.gain.linearRampToValueAtTime(ev.vol, now + 0.3)
+    g.gain.setValueAtTime(ev.vol, now + ev.dur)
+    g.gain.linearRampToValueAtTime(0, now + ev.dur + 0.5)
+    osc.connect(g)
+    g.connect(ctx.destination)
+    osc.start(now)
+    osc.stop(now + ev.dur + 1)
+  }
+}
+
+// Exit gold point: pure 432Hz — the harmony frequency, 600ms
+export function sfxSingularityExitTone() {
+  const ctx = getCtx()
+  if (!ctx) return
+  const now = ctx.currentTime
+
+  const osc = ctx.createOscillator()
+  const g = ctx.createGain()
+  osc.type = 'sine'
+  osc.frequency.value = 432
+  g.gain.setValueAtTime(0, now)
+  g.gain.linearRampToValueAtTime(0.15, now + 0.15)
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.6)
+  osc.connect(g)
+  g.connect(ctx.destination)
+  osc.start(now)
+  osc.stop(now + 0.65)
+}

@@ -14,6 +14,8 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useStore } from '../../../store/useStore'
+import { SETTINGS } from '../../../utils/deviceTier'
 
 import {
   extractTextPositions,
@@ -138,11 +140,9 @@ const WAYPOINTS = [
 export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, onActChange }) {
   const { camera } = useThree()
 
-  const COUNT = useMemo(() => {
-    const mobile = window.devicePixelRatio * Math.min(window.innerWidth, window.innerHeight) < 1200
-    // Reduced from 120K to prevent WebGL Context Loss
-    return mobile ? 20000 : 40000
-  }, [])
+  const performanceLow = useStore(s => s.performanceLow)
+
+  const COUNT = useMemo(() => SETTINGS.nebulaParticles, [])
 
   // ─────────────────────────────────────────────────────────
   // GEOMETRY — pre-filled synchronously in useMemo
@@ -189,7 +189,7 @@ export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, 
     uniforms: {
       uMorphProgress:     { value: 0.0 },
       uTime:              { value: 0.0 },
-      uPixelRatio:        { value: Math.min(window.devicePixelRatio, 2) },
+      uPixelRatio:        { value: performanceLow ? 1 : Math.min(window.devicePixelRatio, 2) },
       uSupernovaProgress: { value: 0.0 },
       uDebrisDecay:       { value: 1.0 }
     },
@@ -465,7 +465,7 @@ export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, 
         if (cancelled) return
 
         targetsRef.current.title = await extractTextPositions(
-          'CREATIVE DEVELOPER', 'Bebas Neue', 200, COUNT, 1400, 400)
+          'PRODUCT MANAGER', 'Bebas Neue', 200, COUNT, 1400, 400)
         if (cancelled) return
 
         const mf = await extractManifestoPositions(
@@ -475,13 +475,13 @@ export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, 
         manifestoPhases.current      = mf.phases
 
         targetsRef.current.word1 = await extractTextPositions(
-          'DESIGN', 'Bebas Neue', 220, COUNT, 1400, 400)
+          'BUILDER', 'Bebas Neue', 220, COUNT, 1400, 400)
         if (cancelled) return
         targetsRef.current.word2 = await extractTextPositions(
-          'CODE', 'Bebas Neue', 220, COUNT, 1400, 400)
+          'SYSTEMS', 'Bebas Neue', 220, COUNT, 1400, 400)
         if (cancelled) return
         targetsRef.current.word3 = await extractTextPositions(
-          'VISION', 'Bebas Neue', 220, COUNT, 1400, 400)
+          'HUMAN', 'Bebas Neue', 220, COUNT, 1400, 400)
         if (cancelled) return
 
         targetsRef.current.sigil = extractSigilPositions(COUNT)

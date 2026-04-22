@@ -50,8 +50,8 @@ export default function ManifestoText() {
       <div className="word-row">
         <span className="word word-1" data-cursor="hover-drag">I</span>
         <span className="word word-1" data-cursor="hover-drag">DON'T</span>
-        <span className="word word-2" data-cursor="hover-drag">MAKE</span>
-        <span className="word word-2" data-cursor="hover-drag">WEBSITES.</span>
+        <span className="word word-2" data-cursor="hover-drag">MANAGE</span>
+        <span className="word word-2" data-cursor="hover-drag">PRODUCTS.</span>
       </div>
       <div className="word-row">
         <span className="word word-1" data-cursor="hover-drag">I</span>

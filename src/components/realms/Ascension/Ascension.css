@@ -1,0 +1,134 @@
+.ascension-realm {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.ascension-realm.visible {
+    opacity: 1;
+}
+
+.ascension-canvas-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.white-out-flash {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.white-out-flash.active {
+    animation: whiteOutAnim 1.2s forwards;
+}
+
+@keyframes whiteOutAnim {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.ascension-ui {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    text-align: center;
+    padding: 0 2rem;
+}
+
+.ascension-line {
+    font-family: 'Space Grotesk', sans-serif;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.2rem;
+    letter-spacing: 0.3em;
+    margin: 0.8rem 0;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ascension-line.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ascension-line.line-4 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #C9A84C;
+    margin-top: 3rem;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
+}
+
+.ascension-line.line-5 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    color: #00F5FF;
+    margin-bottom: 2rem;
+}
+
+.ascension-line.line-6 {
+    font-size: 1.1rem;
+    color: #fff;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 2rem;
+}
+
+.realm-signature {
+    position: absolute;
+    bottom: 2rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.2);
+    z-index: 20;
+}
+
+.sig-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pulsing-dot {
+    width: 4px;
+    height: 4px;
+    background: #C9A84C;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #C9A84C;
+    animation: dotPulse 2s infinite;
+}
+
+@keyframes dotPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+}
+
+.sig-right {
+    cursor: help;
+    transition: color 0.3s ease;
+}
+
+.sig-right:hover {
+    color: rgba(255, 255, 255, 0.6);
+}

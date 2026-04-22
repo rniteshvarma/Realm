@@ -3,6 +3,7 @@ uniform sampler2D tDiffuse;
 uniform float uClarity; // 0.0 (distorted) to 1.0 (clear)
 uniform vec2 uHandPos; // normalized handprint position
 uniform float uHandIntensity; // bloom intensity
+uniform float uOpacity; 
 varying vec2 vUv;
 
 void main() {
@@ -35,5 +36,5 @@ void main() {
     vec3 gold = vec3(0.788, 0.659, 0.298); // #C9A84C
     vec4 finalColor = baseColor + vec4(gold * handInfluence * 1.5, 0.0);
     
-    gl_FragColor = finalColor;
+    gl_FragColor = vec4(finalColor.rgb, finalColor.a * uOpacity);
 }

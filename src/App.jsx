@@ -58,19 +58,26 @@ class RealmErrorBoundary extends Component {
   }
 }
 
-// Lazy load Realms
-const HeroScene       = lazy(() => import('./components/realms/Manifesto/HeroScene'))
-const ArsenalScene    = lazy(() => import('./components/realms/Arsenal/ArsenalScene'))
-const CartographyScene = lazy(() => import('./components/realms/Cartography/CartographyScene'))
-const SignalScene     = lazy(() => import('./components/realms/Signal/SignalScene'))
-const NebulaScene     = lazy(() => import('./components/realms/Nebula/NebulaScene'))
-const FrequencyScene  = lazy(() => import('./components/realms/Frequency/FrequencyScene'))
-const MythEngine      = lazy(() => import('./components/realms/MythEngine/MythEngineScene'))
-const Transcendence   = lazy(() => import('./components/realms/Transcendence/TranscendenceScene'))
-const RealmIX         = lazy(() => import('./components/realms/RealmIX/RealmIXScene'))
+// ─── REALM ORDER (BRIEF 11) ────────────────────────────────────────────────
+// 0: THE GATE         — LoadingRitual (not in scroll stack)
+// 1: THE MANIFESTO    — HeroScene
+// 2: THE FORGE        — ArsenalScene
+// 3: THE CARTOGRAPHY  — CartographyScene
+// 4: THE NEBULA       — NebulaScene
+// 5: THE FREQUENCY    — FrequencyScene
+// 6: THE LOOKING GLASS — SignalScene
 
-// Preload realm 5 chunk the moment realm 4 enters the viewport
-// so the JS is already parsed & ready when the user scrolls there
+// Lazy load Realms
+const HeroScene        = lazy(() => import('./components/realms/Manifesto/HeroScene'))
+const ArsenalScene     = lazy(() => import('./components/realms/Arsenal/ArsenalScene'))
+const CartographyScene = lazy(() => import('./components/realms/Cartography/CartographyScene'))
+const NebulaScene      = lazy(() => import('./components/realms/Nebula/NebulaScene'))
+const FrequencyScene   = lazy(() => import('./components/realms/Frequency/FrequencyScene'))
+const SignalScene      = lazy(() => import('./components/realms/Signal/SignalScene'))
+const TranscendenceScene = lazy(() => import('./components/realms/Transcendence/TranscendenceScene'))
+const AscensionScene = lazy(() => import('./components/realms/Ascension/AscensionScene'))
+
+// Preload next realm when current becomes visible
 function usePreloadWhenVisible(sectionRef, importFn) {
   useEffect(() => {
     if (!sectionRef.current) return
@@ -84,16 +91,23 @@ function usePreloadWhenVisible(sectionRef, importFn) {
 }
 
 function App() {
-  const isLoading     = useStore((s) => s.isLoading)
-  const realm         = useStore((s) => s.realm)
-  const soundEnabled  = useStore((s) => s.soundEnabled)
-  const toggleSound   = useStore((s) => s.toggleSound)
-  const realmIXUnlocked = useStore((s) => s.realmIXUnlocked)
-  const containerRef  = useRef(null)
-  const realm4Ref     = useRef(null)  // used to preload realm 5 chunk early
+  const isLoading      = useStore((s) => s.isLoading)
+  const currentRealm   = useStore((s) => s.realm)
+  const signalShattered = useStore((s) => s.signalShattered)
+  const soundEnabled   = useStore((s) => s.soundEnabled)
+  const toggleSound    = useStore((s) => s.toggleSound)
+  const containerRef   = useRef(null)
 
-  // Preload realm 5 JS chunk while user is still in realm 4
-  usePreloadWhenVisible(realm4Ref, () => import('./components/realms/Nebula/NebulaScene'))
+  // Preload refs for adjacent realm chunks
+  const realm2Ref = useRef(null)  // preload Cartography while in Forge
+  const realm3Ref = useRef(null)  // preload Nebula while in Cartography
+  const realm4Ref = useRef(null)  // preload Frequency while in Nebula
+  const realm5Ref = useRef(null)  // preload Looking Glass while in Frequency
+
+  usePreloadWhenVisible(realm2Ref, () => import('./components/realms/Cartography/CartographyScene'))
+  usePreloadWhenVisible(realm3Ref, () => import('./components/realms/Nebula/NebulaScene'))
+  usePreloadWhenVisible(realm4Ref, () => import('./components/realms/Frequency/FrequencyScene'))
+  usePreloadWhenVisible(realm5Ref, () => import('./components/realms/Signal/SignalScene'))
 
   // ── HOOKS — ORDER IS CRITICAL ──
   useSound()
@@ -104,31 +118,69 @@ function App() {
     if (isLoading) return
     const lenis = getLenis()
 
-    // Reduced motion & performance check
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    
-    // Auto-detect potentially low performance devices
-    const isMobile = /Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && window.innerWidth < 1024
-    if (prefersReducedMotion || isMobile) {
+
+    // Auto-detect low-performance devices
+    const isMobileString = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    const isSmallScreen  = window.innerWidth < 1024
+    const lowCores  = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4
+    const lowMemory = navigator.deviceMemory && navigator.deviceMemory < 4
+    const isLowPerf = prefersReducedMotion || isMobileString || (isSmallScreen && lowCores) || lowMemory || lowCores
+
+    if (isLowPerf) {
       useStore.getState().setPerformanceLow(true)
+      useStore.getState().setQuality('LOW')
     }
-    
-    // Sync ScrollTrigger with Lenis
+
+    // Sync ScrollTrigger with Lenis — exact config from BRIEF 11
     if (lenis && !prefersReducedMotion) {
       lenis.on('scroll', ScrollTrigger.update)
       gsap.ticker.add((time) => {
         lenis.raf(time * 1000)
       })
-      gsap.ticker.lagSmoothing(0)
+      gsap.ticker.lagSmoothing(0)  // critical for smoothness
     } else if (lenis && prefersReducedMotion) {
-      // Disable smooth scroll if reduced motion is preferred
       lenis.destroy()
     }
+
+    // ── Update Current Realm via ScrollTrigger ───────────────────────
+    // We use a robust intersection-like check via ScrollTrigger
+    const sections = gsap.utils.toArray('.realm-section')
+    sections.forEach((section, i) => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top center',
+        end: 'bottom center',
+        onEnter: () => {
+          const r = i + 1
+          useStore.getState().setRealm(r)
+          useStore.getState().markRealmVisited(r)
+        },
+        onEnterBack: () => {
+          const r = i + 1
+          useStore.getState().setRealm(r)
+          useStore.getState().markRealmVisited(r)
+        },
+      })
+    })
+
+    // Initial refresh once everything is rendered
+    setTimeout(() => ScrollTrigger.refresh(), 500)
 
     return () => {
       ScrollTrigger.getAll().forEach(t => t.kill())
     }
   }, [isLoading])
+
+  // Refresh ScrollTrigger whenever currentRealm changes to account for new pins/spacers
+  useEffect(() => {
+    if (!isLoading) {
+      ScrollTrigger.refresh()
+      // Sometimes one refresh isn't enough for nested pins
+      const timer = setTimeout(() => ScrollTrigger.refresh(), 200)
+      return () => clearTimeout(timer)
+    }
+  }, [currentRealm, isLoading])
 
   return (
     <>
@@ -139,10 +191,10 @@ function App() {
         <AudioVisualizer enabled={soundEnabled} onToggle={toggleSound} />
       </div>
 
-      {/* CONSTELLATION NAV — always visible once loaded */}
+      {/* CONSTELLATION NAV — 7 nodes once loaded */}
       {!isLoading && <ConstellationNav />}
 
-      {/* LORE TRACKER — tracks 5 easter eggs */}
+      {/* LORE TRACKER */}
       {!isLoading && <LoreTracker />}
 
       {/* WARP OVERLAY — for constellation nav warp transitions */}
@@ -153,56 +205,71 @@ function App() {
       {!isLoading && (
         <main className="experience-container" ref={containerRef}>
           <RealmErrorBoundary>
-            <Suspense fallback={<div style={{height: '100vh', width: '100vw', background: 'var(--void)'}} />}>
-              
-              {/* REALM 1: THE MANIFESTO */}
-              <section className="realm-section realm-1" data-realm="1">
+            {/* REALM I: THE MANIFESTO */}
+            <section className="realm-section realm-1" data-realm="1">
+              <Suspense fallback={<div className="realm-loader-placeholder" />}>
                 <HeroScene />
-              </section>
-              
-              {/* REALM 2: THE ARSENAL */}
-              <section className="realm-section realm-2" data-realm="2">
+              </Suspense>
+            </section>
+            
+            {/* REALM II: THE FORGE */}
+            <section className="realm-section realm-2" data-realm="2" ref={realm2Ref}>
+              <Suspense fallback={<div className="realm-loader-placeholder" />}>
                 <ArsenalScene />
-              </section>
+              </Suspense>
+            </section>
 
-              {/* REALM 3: THE CARTOGRAPHY */}
-              <section className="realm-section realm-3" data-realm="3">
+            {/* REALM III: THE CARTOGRAPHY */}
+            <section className="realm-section realm-3" data-realm="3" ref={realm3Ref}>
+              <Suspense fallback={<div className="realm-loader-placeholder" />}>
                 <CartographyScene />
-              </section>
+              </Suspense>
+            </section>
 
-              {/* REALM 4: THE SIGNAL */}
-              <section className="realm-section realm-4" data-realm="4" ref={realm4Ref}>
-                <SignalScene />
-              </section>
-
-              {/* REALM 5: THE NEBULA */}
-              <section className="realm-section realm-5" data-realm="5">
+            {/* REALM IV: THE NEBULA */}
+            <section className="realm-section realm-4" data-realm="4" ref={realm4Ref}>
+              <Suspense fallback={<div className="realm-loader-placeholder" />}>
                 <NebulaScene />
-              </section>
+              </Suspense>
+            </section>
 
-              {/* REALM 6: THE FREQUENCY */}
-              <section className="realm-section realm-6" data-realm="6">
+            {/* REALM V: THE FREQUENCY */}
+            <section className="realm-section realm-5" data-realm="5" ref={realm5Ref}>
+              <Suspense fallback={<div className="realm-loader-placeholder" />}>
                 <FrequencyScene />
-              </section>
+              </Suspense>
+            </section>
 
-              {/* REALM 7: MYTH ENGINE */}
-              <section className="realm-section realm-7" data-realm="7">
-                <MythEngine />
-              </section>
+            {/* REALM VI: THE LOOKING GLASS */}
+            <section className="realm-section realm-6" data-realm="6">
+              <Suspense fallback={<div className="realm-loader-placeholder" />}>
+                <SignalScene />
+              </Suspense>
+            </section>
 
-              {/* REALM 8: TRANSCENDENCE */}
-              <section className="realm-section realm-8" data-realm="8">
-                <Transcendence />
-              </section>
-
-              {/* REALM IX: HIDDEN — unlocked when all 5 eggs found */}
-              {realmIXUnlocked && (
-                <section className="realm-section realm-ix" data-realm="9">
-                  <RealmIX />
-                </section>
+            {/* REALM VII: TRANSCENDENCE */}
+            <section 
+              className={`realm-section realm-7 ${!signalShattered ? 'locked-section' : ''}`} 
+              data-realm="7"
+            >
+              {signalShattered && (
+                <Suspense fallback={<div className="realm-loader-placeholder" />}>
+                  <TranscendenceScene />
+                </Suspense>
               )}
+            </section>
 
-            </Suspense>
+            {/* REALM VIII: ASCENSION */}
+            <section 
+              className={`realm-section realm-8 ${!signalShattered ? 'locked-section' : ''}`} 
+              data-realm="8"
+            >
+              {signalShattered && (
+                <Suspense fallback={<div className="realm-loader-placeholder" />}>
+                  <AscensionScene />
+                </Suspense>
+              )}
+            </section>
           </RealmErrorBoundary>
         </main>
       )}

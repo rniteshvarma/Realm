@@ -7,6 +7,20 @@
 }
 
 /* ── Floating Approach Text ── */
+.signal-realm-label {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--ghost);
+  opacity: 0.15;
+  z-index: 100;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
 .approach-text-container {
   position: absolute;
   top: 45%;
@@ -48,6 +62,108 @@
 
 .come-closer.scaling {
   animation: slowGrow 4s linear forwards;
+}
+
+/* ── End Sequence Overlay ── */
+.end-sequence-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: radial-gradient(circle at center, transparent 0%, var(--void) 80%);
+  pointer-events: none;
+  animation: fadeIn 2.5s ease-out forwards;
+}
+
+.end-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 3rem;
+}
+
+.end-line {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.35em;
+  color: var(--ghost);
+  opacity: 0.5;
+  text-transform: uppercase;
+  animation: slideUpFade 1.2s ease-out forwards;
+}
+
+.end-name {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 6.5rem);
+  color: var(--sacred);
+  letter-spacing: 0.15em;
+  margin: 0;
+  text-shadow: 0 0 50px var(--sacred-dim);
+  line-height: 1;
+  animation: scaleInFade 2s ease-out 0.5s forwards;
+  opacity: 0;
+}
+
+.end-tagline {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.45em;
+  color: var(--ghost);
+  opacity: 0.3;
+  margin-top: 0.5rem;
+  animation: fadeIn 2s ease-out 1.2s forwards;
+  opacity: 0;
+}
+
+.end-cta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  color: var(--neural);
+  margin-top: 4rem;
+  text-transform: uppercase;
+  border-top: 1px solid var(--neural-dim);
+  border-bottom: 1px solid var(--neural-dim);
+  padding: 1.2rem 2.5rem;
+  animation: fadeIn 2s ease-out 2s forwards;
+  opacity: 0;
+}
+
+.end-footer {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.25em;
+  color: var(--ghost);
+  opacity: 0.2;
+  white-space: nowrap;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 0.5; transform: translateY(0); }
+}
+
+@keyframes scaleInFade {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+  .end-name { font-size: 3.5rem; }
+  .end-cta { font-size: 0.6rem; padding: 1rem 1.5rem; }
 }
 
 @keyframes slowGrow {
