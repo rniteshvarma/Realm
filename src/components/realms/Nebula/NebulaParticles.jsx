@@ -83,14 +83,17 @@ const VERT = /* glsl */`
 
     vColor = aColor;
 
-    float baseAlpha = eased * 0.85 + 0.15;
+    // Formed text packs tens of thousands of additive points into a small
+    // area — keep them fine and a little dimmer so letters stay crisp
+    // instead of saturating into a white slab.
+    float baseAlpha = mix(0.15, 0.7, eased);
     if (uSupernovaProgress > 0.8) {
       baseAlpha *= 1.0 - (uSupernovaProgress - 0.8) * 2.5;
       baseAlpha  = max(baseAlpha, 0.05);
     }
     vAlpha = clamp(baseAlpha, 0.0, 1.0);
 
-    float sz = aSize * (0.4 + eased * 0.6);
+    float sz = aSize * mix(0.4, 0.11, eased);
     if (uSupernovaProgress > 0.0) {
       sz += max(0.0, aVelocity.z) * uSupernovaProgress * 10.0;
     }
@@ -506,6 +509,15 @@ export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, 
   useFrame((state) => {
     material.uniforms.uTime.value = state.clock.getElapsedTime()
 
+    // Fit the 16-unit-wide words inside ~88% of the view on narrow screens
+    if (pointsRef.current) {
+      const dist  = camera.position.length()
+      const viewW = 2 * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect
+      const fit   = THREE.MathUtils.clamp((viewW * 0.88) / 16, 0.35, 1)
+      const cur   = pointsRef.current.scale.x
+      pointsRef.current.scale.setScalar(cur + (fit - cur) * 0.08)
+    }
+
     // Mouse parallax
     mouseOff.current.x = THREE.MathUtils.lerp(mouseOff.current.x, mouseTgt.current.x * 0.3, 0.03)
     mouseOff.current.y = THREE.MathUtils.lerp(mouseOff.current.y, mouseTgt.current.y * 0.3, 0.03)
@@ -519,10 +531,20 @@ export default function NebulaParticles({ containerRef, bloomRef, chromaticRef, 
 
     if (inSigilHold.current) {
       sigilRotY.current      += 0.002
+      nebulaRotY.current      = sigilRotY.current   // shared, so no snap on exit
       pointsRef.current.rotation.y = sigilRotY.current
     } else if (material.uniforms.uMorphProgress.value < 0.1) {
       nebulaRotY.current     += 0.000262
+      sigilRotY.current       = nebulaRotY.current
       pointsRef.current.rotation.y = nebulaRotY.current
+    } else {
+      // Text is forming — ease back to face the camera (nearest full turn)
+      // so words never read mirrored or skewed.
+      const TWO_PI = Math.PI * 2
+      const facing = Math.round(nebulaRotY.current / TWO_PI) * TWO_PI
+      nebulaRotY.current = THREE.MathUtils.lerp(nebulaRotY.current, facing, 0.08)
+      pointsRef.current.rotation.y = nebulaRotY.current
+      sigilRotY.current = nebulaRotY.current
     }
   })
 

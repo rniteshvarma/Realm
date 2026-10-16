@@ -7,6 +7,7 @@ import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { useStore } from '../../../store/useStore'
 import { SETTINGS } from '../../../utils/deviceTier'
+import { useRealmFrameloop } from '../../../hooks/useRealmActive'
 
 import vertShader from '../../../gl/shaders/iridescent.vert.glsl?raw'
 import fragShader from '../../../gl/shaders/iridescent.frag.glsl?raw'
@@ -49,7 +50,6 @@ function MetatronsCube() {
 
 function IridescentBackground() {
   const materialRef = useRef()
-  const mouse = useStore(state => state.mouse)
 
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
@@ -57,11 +57,15 @@ function IridescentBackground() {
     uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
   }), [])
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (materialRef.current) {
+      // Read the pointer straight from the store — subscribing would
+      // re-render this component on every mouse move.
+      const { mouse } = useStore.getState()
+      const k = 1 - Math.pow(0.95, delta * 60)
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime
-      materialRef.current.uniforms.uMouse.value.x += (mouse.x - materialRef.current.uniforms.uMouse.value.x) * 0.05
-      materialRef.current.uniforms.uMouse.value.y += (mouse.y - materialRef.current.uniforms.uMouse.value.y) * 0.05
+      materialRef.current.uniforms.uMouse.value.x += (mouse.x - materialRef.current.uniforms.uMouse.value.x) * k
+      materialRef.current.uniforms.uMouse.value.y += (mouse.y - materialRef.current.uniforms.uMouse.value.y) * k
     }
   })
 
@@ -98,25 +102,28 @@ function useEgg1(ghostRef, discoverEgg) {
   const timerRef    = useRef(null)
   const foundRef    = useRef(false)
   const fadeOutRef  = useRef(null)
+  const shownRef    = useRef(false) // only discoverable while actually visible
 
   useEffect(() => {
     const resetTimer = () => {
       clearTimeout(timerRef.current)
-      // If ghost is visible, hide it
-      if (ghostRef.current) {
-        gsap.to(ghostRef.current, { opacity: 0, duration: 0.5 })
-      }
+      // If ghost is visible, give the visitor a moment to reach it, then hide
+      if (shownRef.current) return
       timerRef.current = setTimeout(() => {
         if (!ghostRef.current) return
+        shownRef.current = true
         gsap.to(ghostRef.current, { opacity: 1, duration: 0.8 })
         // Auto-fade after 3s
+        clearTimeout(fadeOutRef.current)
         fadeOutRef.current = setTimeout(() => {
-          gsap.to(ghostRef.current, { opacity: 0, duration: 0.8 })
+          shownRef.current = false
+          if (ghostRef.current) gsap.to(ghostRef.current, { opacity: 0, duration: 0.8 })
+          resetTimer()
         }, 3000)
       }, EGG1_IDLE_MS)
     }
 
-    window.addEventListener('mousemove', resetTimer)
+    window.addEventListener('mousemove', resetTimer, { passive: true })
     resetTimer()
     return () => {
       window.removeEventListener('mousemove', resetTimer)
@@ -126,7 +133,7 @@ function useEgg1(ghostRef, discoverEgg) {
   }, [ghostRef])
 
   const handleGhostHover = () => {
-    if (!foundRef.current) {
+    if (shownRef.current && !foundRef.current) {
       foundRef.current = true
       discoverEgg('patient')
     }
@@ -140,14 +147,10 @@ export default function HeroScene() {
   const discoverEgg    = useStore(state => state.discoverEgg)
   const ghostRef       = useRef(null)
   const { handleGhostHover } = useEgg1(ghostRef, discoverEgg)
+  const frameloop = useRealmFrameloop()
 
   return (
     <div className="manifesto-realm">
-      {/* Metatron's Cube watermark */}
-      <div className="manifesto-metatron">
-        <MetatronsCube />
-      </div>
-
       {/* Egg 1: Ghost PATIENT word */}
       <div
         ref={ghostRef}
@@ -161,6 +164,7 @@ export default function HeroScene() {
         <Canvas 
           gl={{ antialias: SETTINGS.TIER >= 2, alpha: false, powerPreference: 'high-performance', stencil: false }}
           dpr={[0.85, SETTINGS.pixelRatio]}
+          frameloop={frameloop}
         >
           <OrthographicCamera makeDefault position={[0, 0, 1]} left={-1} right={1} top={1} bottom={-1} near={0.1} far={10} /> 
           <IridescentBackground />
@@ -184,10 +188,18 @@ export default function HeroScene() {
         </Canvas>
       </div>
 
+      {/* Metatron's Cube watermark (above the shader, below the text) */}
+      <div className="manifesto-metatron" aria-hidden="true">
+        <MetatronsCube />
+      </div>
+
+      {/* Soft scrim so the headline/subline stay legible over the shader */}
+      <div className="manifesto-scrim" aria-hidden="true" />
+
       <div className="manifesto-content layer-content">
         <ManifestoText />
         <p className="manifesto-subline">Product Manager&nbsp;·&nbsp;Co-founder&nbsp;·&nbsp;Builder</p>
-        <div className="scroll-hint">
+        <div className="manifesto-scroll-hint" aria-hidden="true">
             <div className="waveform-line"></div>
         </div>
       </div>

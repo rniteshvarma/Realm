@@ -1,34 +1,27 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useStore } from '../store/useStore'
-import { lerp } from '../utils/math'
 
+// Tracks the pointer in normalised (0–1) coordinates. Batched to one store
+// write per animation frame so a fast mouse doesn't flood subscribers.
 export const useCursor = () => {
-  const pos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
-  const target = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
-  const rafRef = useRef(null)
-  const setMouse = useStore((s) => s.setMouse)
-
   useEffect(() => {
+    let raf = 0
+    let x = 0.5, y = 0.5
+
+    const flush = () => {
+      raf = 0
+      useStore.getState().setMouse(x, y)
+    }
     const onMove = (e) => {
-      target.current.x = e.clientX
-      target.current.y = e.clientY
-      setMouse(e.clientX / window.innerWidth, e.clientY / window.innerHeight)
+      x = e.clientX / window.innerWidth
+      y = e.clientY / window.innerHeight
+      if (!raf) raf = requestAnimationFrame(flush)
     }
 
     window.addEventListener('mousemove', onMove, { passive: true })
-
-    const tick = () => {
-      pos.current.x = lerp(pos.current.x, target.current.x, 0.1)
-      pos.current.y = lerp(pos.current.y, target.current.y, 0.1)
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-
     return () => {
       window.removeEventListener('mousemove', onMove)
-      cancelAnimationFrame(rafRef.current)
+      cancelAnimationFrame(raf)
     }
-  }, [setMouse])
-
-  return { pos, target }
+  }, [])
 }

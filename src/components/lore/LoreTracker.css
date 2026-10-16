@@ -1,10 +1,11 @@
 .lore-tracker {
   position: fixed;
-  bottom: 2rem;
-  left: 2rem;
+  top: calc(2rem + 40px);   /* tucked under the audio toggle */
+  right: 2rem;
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 0.5rem;
   pointer-events: auto;
   opacity: 0.8;
@@ -75,4 +76,11 @@
 }
 .lore-tracker.all-found .lore-core {
   fill: #fff;
+}
+
+@media (max-width: 768px) {
+  .lore-tracker {
+    top: calc(1rem + 36px);
+    right: 1rem;
+  }
 }

@@ -12,6 +12,7 @@ import * as THREE from 'three'
 import { getLenis } from '../../../hooks/useScroll'
 import { useStore } from '../../../store/useStore'
 import { SETTINGS } from '../../../utils/deviceTier'
+import { useRealmFrameloop } from '../../../hooks/useRealmActive'
 import './Arsenal.css'
 
 import containmentVert from '../../../gl/shaders/containmentField.vert.glsl?raw'
@@ -818,6 +819,9 @@ function ForgeScene({
 
       // Spring physics
       const spring = new SpringNode(group, disc.position.clone())
+      // `anchor` is the node's resting layout point; scroll stages tween it
+      // (scatter → convergence ring → exit) and the spring follows smoothly.
+      spring.anchor = disc.position.clone()
       springsRef.current.push(spring)
     })
 
@@ -853,6 +857,12 @@ function ForgeScene({
     return () => {
       particleSystemRef.current?.dispose()
       scene.clear()
+      // Reset so a remount (StrictMode / hot reload) doesn't double the nodes
+      nodeGroupsRef.current = []
+      springsRef.current = []
+      wallMatsRef.current = []
+      ceilArcsRef.current = []
+      connectionArcsRef.current = []
     }
   }, []) // eslint-disable-line
 
@@ -865,7 +875,9 @@ function ForgeScene({
     // Update containment walls
     wallMatsRef.current.forEach(m => {
       m.uniforms.uTime.value = t
-      const convergeSyncVal = convergenceActive.current ? Math.min((t - (convergenceActive.current || t)) / 2, 1) : 0
+      const convergeSyncVal = convergenceActive.current
+        ? Math.min((performance.now() - convergenceActive.current) / 2000, 1)
+        : 0
       m.uniforms.uPulseSync.value = convergeSyncVal
     })
 
@@ -897,18 +909,17 @@ function ForgeScene({
     nodeGroupsRef.current.forEach((group, i) => {
       if (!group) return
       const disc = DISCIPLINES[i]
-      const bobY = disc.position.y + Math.sin(t * 0.5 + i * 1.3) * 0.3
-      if (!springsRef.current[i].isDragging) {
-        group.position.y = bobY
-      }
+      const spring = springsRef.current[i]
 
-      // Slow drift attract/repel
-      const driftPhase = Math.sin(t / 8 + i * 1.2) * 0.3
-      if (!springsRef.current[i].isDragging && !freeForgActive.current) {
-        group.position.x = disc.position.x + driftPhase * 0.5
+      // Gentle bob + drift layered on the (tweenable) anchor. Driving
+      // everything through the spring keeps stage transitions smooth instead
+      // of fighting GSAP tweens on the same position.
+      if (!spring.isDragging) {
+        const bob   = Math.sin(t * 0.5 + i * 1.3) * 0.3
+        const drift = Math.sin(t / 8 + i * 1.2) * 0.15
+        spring.home.set(spring.anchor.x + drift, spring.anchor.y + bob, spring.anchor.z)
       }
-
-      springsRef.current[i].update()
+      spring.update()
 
       // Rotate inner rings (engineering node)
       if (disc.nodeType === 'rings') {
@@ -1112,52 +1123,93 @@ function ForgeScene({
     return () => window.removeEventListener('forge:retract', handleRetract)
   }, [])
 
-  // ── Convergence ──
+  // ── Convergence / exit (reversible so scrolling back up restores the room) ──
   useEffect(() => {
-    const handleConvergence = () => {
-      const center = new THREE.Vector3(0, 0, 0)
-      nodeGroupsRef.current.forEach((group, i) => {
-        if (!group) return
-        const offset = new THREE.Vector3(
-          Math.cos(i / 5 * Math.PI * 2) * 4.5,
-          0,
-          Math.sin(i / 5 * Math.PI * 2) * 4.5
-        )
-        gsap.to(group.position, {
-          x: center.x + offset.x, y: center.y + offset.y, z: center.z + offset.z,
-          duration: 2.5, ease: 'power2.inOut'
-        })
-        springsRef.current[i].home.copy(center).add(offset)
+    const tweenAnchors = (getTarget, opts) => {
+      springsRef.current.forEach((spring, i) => {
+        const target = getTarget(i)
+        gsap.to(spring.anchor, { ...target, overwrite: true, ...opts(i) })
       })
+    }
+    const ringPoint = (i) => ({
+      x: Math.cos(i / 5 * Math.PI * 2) * 4.5,
+      y: 0,
+      z: Math.sin(i / 5 * Math.PI * 2) * 4.5,
+    })
+
+    const handleConvergence = () => {
+      tweenAnchors(ringPoint, () => ({ duration: 2.5, ease: 'power2.inOut' }))
       connectionArcsRef.current.forEach(({ mat }) => {
-        gsap.to(mat, { opacity: 0.8, duration: 1 })
+        gsap.to(mat, { opacity: 0.8, duration: 1, overwrite: true })
+      })
+    }
+
+    const handleDiverge = () => {
+      tweenAnchors((i) => {
+        const p = DISCIPLINES[i].position
+        return { x: p.x, y: p.y, z: p.z }
+      }, () => ({ duration: 1.6, ease: 'power2.inOut' }))
+      connectionArcsRef.current.forEach(({ mat }, i) => {
+        const lit = visitedNodes.current?.has(i)
+        gsap.to(mat, { opacity: lit ? 0.5 : 0, duration: 0.8, overwrite: true })
       })
     }
 
     const handleExit = () => {
-      nodeGroupsRef.current.forEach((group, i) => {
-        if (!group) return
-        gsap.to(group.position, {
-          y: 40, duration: 0.8 + i * 0.1, ease: 'power2.in', delay: i * 0.1,
-        })
-      })
-      if (particleSystemRef.current) {
-        // Drain upward — done via attractor at ceiling
-      }
+      tweenAnchors((i) => ({ ...ringPoint(i), y: 40 }), (i) => ({
+        duration: 0.8 + i * 0.1, ease: 'power2.in', delay: i * 0.1,
+      }))
       wallMatsRef.current.forEach(m => {
         gsap.to(m.uniforms.uPulseSync, { value: 0, duration: 1.2 })
       })
     }
 
+    const handleReturn = () => {
+      tweenAnchors(ringPoint, () => ({ duration: 1.2, ease: 'power2.out' }))
+    }
+
     window.addEventListener('forge:convergence', handleConvergence)
+    window.addEventListener('forge:diverge', handleDiverge)
     window.addEventListener('forge:exit', handleExit)
+    window.addEventListener('forge:return', handleReturn)
     return () => {
       window.removeEventListener('forge:convergence', handleConvergence)
+      window.removeEventListener('forge:diverge', handleDiverge)
       window.removeEventListener('forge:exit', handleExit)
+      window.removeEventListener('forge:return', handleReturn)
     }
   }, [])
 
   return null
+}
+
+// Letters animate individually but are grouped per word so lines wrap on
+// word boundaries on narrow screens.
+function ConvergenceLine({ text, step, offset = 0 }) {
+  // Character index across the whole line (spaces included) drives the stagger
+  let start = 0
+  const words = text.split(' ').map((word) => {
+    const w = { word, start }
+    start += word.length + 1
+    return w
+  })
+  return (
+    <div className="forge-conv-line reveal">
+      {words.map(({ word, start }) => (
+        <span key={start} className="forge-conv-word">
+          {word.split('').map((ch, i) => (
+            <span
+              key={i}
+              className="forge-conv-letter"
+              style={{ animationDelay: `${(start + i) * step + offset}s` }}
+            >
+              {ch}
+            </span>
+          ))}
+        </span>
+      ))}
+    </div>
+  )
 }
 
 // ─── Main Exported Component ──────────────────────────────────────────────────
@@ -1168,8 +1220,10 @@ export default function ArsenalScene() {
   const visitedNodesRef = useRef(new Set())
   const convergenceActiveRef = useRef(null)
   const freeForgActiveRef = useRef(false)
+  const exitedRef = useRef(false)
+  const convergenceTimersRef = useRef([])
   const audioRef = useRef(createForgeAudio())
-  const [particleCount, setParticleCount] = useState(0)
+  const frameloop = useRealmFrameloop()
   const [activeDisc, setActiveDisc] = useState(null)
   const [hoveredSkill, setHoveredSkill] = useState(null)
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
@@ -1212,17 +1266,35 @@ export default function ArsenalScene() {
           scrollProgressRef.current = sp
 
           // Stage 1 — show approach prompt
-          if (sp < 0.2) {
-            setShowApproachPrompt(true)
-            setActiveDisc(null)
-          } else {
-            setShowApproachPrompt(false)
+          setShowApproachPrompt(sp < 0.2)
+
+          // Stage 3 — convergence
+          if (sp >= 0.88 && !convergenceActiveRef.current) {
+            convergenceActiveRef.current = performance.now()
+            // (stage 2 below retracts the last node and clears its title)
+            window.dispatchEvent(new CustomEvent('forge:convergence'))
+            audioRef.current?.triggerConvergence()
+            // Text timing — staggered after convergence node movement
+            convergenceTimersRef.current.push(
+              setTimeout(() => setConvergenceText(t => ({ ...t, line1: true })), 2500),
+              setTimeout(() => setConvergenceText(t => ({ ...t, line2: true })), 4500),
+            )
+          } else if (sp < 0.87 && convergenceActiveRef.current) {
+            // Scrolled back up — undo the finale so it can't overlap the
+            // per-discipline titles
+            convergenceActiveRef.current = null
+            convergenceTimersRef.current.forEach(clearTimeout)
+            convergenceTimersRef.current = []
+            setConvergenceText({ line1: false, line2: false })
+            window.dispatchEvent(new CustomEvent('forge:diverge'))
           }
+
 
           // Stage 2 — per-discipline approach
           const stageBreaks = [0.20, 0.36, 0.52, 0.64, 0.76, 0.88]
           let activeIdx = -1
-          for (let i = 0; i < 5; i++) {
+          // While the finale is showing, no discipline title competes with it
+          for (let i = 0; i < 5 && !convergenceActiveRef.current; i++) {
             if (sp >= stageBreaks[i] && sp < stageBreaks[i+1]) {
               activeIdx = i
               break
@@ -1241,33 +1313,28 @@ export default function ArsenalScene() {
             }
           }
 
-          // Stage 3 — convergence (only after ALL 5 nodes visited)
-          const allVisited = visitedNodesRef.current.size >= 5
-          if (sp >= 0.88 && !convergenceActiveRef.current && allVisited) {
-            convergenceActiveRef.current = performance.now()
-            setActiveDisc(null)          // clear discipline title
-            activeNodeRef.current = -1   // reset active track
-            window.dispatchEvent(new CustomEvent('forge:convergence'))
-            audioRef.current?.triggerConvergence()
-            // Text timing — staggered after convergence node movement
-            setTimeout(() => setConvergenceText(t => ({ ...t, line1: true })), 2500)
-            setTimeout(() => setConvergenceText(t => ({ ...t, line2: true })), 4500)
-          }
-
           // Free Forge stage
-          if (sp >= 0.92 && allVisited && !freeForgActiveRef.current) {
-            freeForgActiveRef.current = true
-            setShowFreeForge(true)
+          const freeForge = sp >= 0.92
+          if (freeForge !== freeForgActiveRef.current) {
+            freeForgActiveRef.current = freeForge
+            setShowFreeForge(freeForge)
           }
 
-          // Exit
-          if (sp >= 0.98) {
+          // Exit (one-shot, reversible)
+          if (sp >= 0.98 && !exitedRef.current) {
+            exitedRef.current = true
             window.dispatchEvent(new CustomEvent('forge:exit'))
+          } else if (sp < 0.96 && exitedRef.current) {
+            exitedRef.current = false
+            window.dispatchEvent(new CustomEvent('forge:return'))
           }
         },
       })
     }, containerRef)
-    return () => ctx.revert()
+    return () => {
+      convergenceTimersRef.current.forEach(clearTimeout)
+      ctx.revert()
+    }
   }, [])
 
   // ── Ignition trigger ──
@@ -1302,11 +1369,11 @@ export default function ArsenalScene() {
         style={{ position: 'absolute', inset: 0 }}
         gl={{ antialias: SETTINGS.TIER >= 2, alpha: false, powerPreference: 'high-performance', stencil: false }}
         dpr={[0.85, SETTINGS.pixelRatio]}
+        frameloop={frameloop}
       >
         <ForgeScene
           scrollProgress={scrollProgressRef}
           activeNode={activeNodeRef}
-          onParticleCount={setParticleCount}
           visitedNodes={visitedNodesRef}
           convergenceActive={convergenceActiveRef}
           freeForgActive={freeForgActiveRef}
@@ -1328,7 +1395,7 @@ export default function ArsenalScene() {
       </div>
 
       {/* BOTTOM LEFT — discipline progress dots */}
-      <div className="forge-progress-dots">
+      <div className={`forge-progress-dots ${visitedSet.size >= DISCIPLINES.length ? 'all-visited' : ''}`}>
         {DISCIPLINES.map((d, i) => (
           <div
             key={d.id}
@@ -1365,21 +1432,9 @@ export default function ArsenalScene() {
       {/* CONVERGENCE TEXT */}
       {convergenceText.line1 && (
         <div className="forge-convergence-text">
-          <div className={`forge-conv-line ${convergenceText.line1 ? 'reveal' : ''}`}>
-            {convergenceLine1.split('').map((ch, ci) => (
-              <span key={ci} className="forge-conv-letter" style={{ animationDelay: `${ci * 0.04}s` }}>
-                {ch === ' ' ? '\u00A0' : ch}
-              </span>
-            ))}
-          </div>
+          <ConvergenceLine text={convergenceLine1} step={0.04} />
           {convergenceText.line2 && (
-            <div className="forge-conv-line reveal" style={{ animationDelay: '0.3s' }}>
-              {convergenceLine2.split('').map((ch, ci) => (
-                <span key={ci} className="forge-conv-letter" style={{ animationDelay: `${ci * 0.06 + 0.3}s` }}>
-                  {ch === ' ' ? '\u00A0' : ch}
-                </span>
-              ))}
-            </div>
+            <ConvergenceLine text={convergenceLine2} step={0.06} offset={0.3} />
           )}
         </div>
       )}

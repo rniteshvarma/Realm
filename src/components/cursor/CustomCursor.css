@@ -8,6 +8,20 @@
   pointer-events: none;
   z-index: 9999;
   will-change: transform;
+  visibility: hidden;   /* until the first mousemove places it */
+}
+
+.cursor-orb[data-ready],
+.cursor-ring[data-ready] {
+  visibility: visible;
+}
+
+/* Touch devices keep native behaviour — no custom cursor */
+@media (pointer: coarse), (hover: none) {
+  .cursor-orb,
+  .cursor-ring {
+    display: none;
+  }
 }
 
 /* ── Orb (8px, tracks exactly) ─────────────────────── */
@@ -18,8 +32,7 @@
   border-radius: 50%;
   margin-left: -4px;
   margin-top: -4px;
-  transition: opacity 0.3s var(--ease-cinematic),
-              transform 0.1s;
+  transition: opacity 0.3s var(--ease-cinematic);
   box-shadow: 0 0 10px var(--neural-glow), 0 0 20px var(--neural-dim);
 }
 
@@ -56,7 +69,8 @@
               height 0.5s var(--ease-cinematic),
               margin 0.5s var(--ease-cinematic),
               border-color 0.4s,
-              background 0.4s;
+              background 0.4s,
+              opacity 0.3s;
 }
 
 .cursor-ring--hover-link {
@@ -74,7 +88,7 @@
   box-shadow: 0 0 15px var(--neural-dim);
 }
 
-.cursor-ring--active {
+.cursor-ring[data-active] {
   width: 12px !important;
   height: 12px !important;
   margin-left: -6px !important;

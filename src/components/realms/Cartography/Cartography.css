@@ -13,7 +13,7 @@
 .cartography-sticky {
   position: sticky;
   top: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   overflow: hidden;
 }
@@ -33,7 +33,8 @@
 .entry-title {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: clamp(2.5rem, 7vw, 6rem);
-  font-weight: 900;
+  font-weight: 400;
+  padding: 0 1rem;
   color: var(--ghost, #f0f0f0);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -91,8 +92,9 @@
 /* ── Vertical Progress Bar ────────────────────────────── */
 .cartography-progress-bar {
   position: absolute;
-  top: 2rem;
+  top: 50%;
   right: 2rem;
+  transform: translateY(-50%);   /* top-right corner belongs to the global HUD */
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -218,7 +220,7 @@
 .orbit-meta__title {
   font-family: var(--font-display, sans-serif);
   font-size: clamp(2rem, 5vw, 4.5rem);
-  font-weight: 900;
+  font-weight: 400;
   color: var(--ghost, #f0f0f0);
   text-transform: uppercase;
   line-height: 0.95;
@@ -294,7 +296,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3rem;
+  gap: clamp(1rem, 4.5vh, 3rem);
+  padding: 4rem 1.5rem;
 }
 
 .narrative-block {
@@ -313,8 +316,8 @@
 /* BLOCK A — massive single verb */
 .narrative-block--a {
   font-family: var(--font-display, sans-serif);
-  font-size: clamp(5rem, 14vw, 14rem);
-  font-weight: 900;
+  font-size: clamp(3.5rem, min(14vw, 22vh), 14rem);
+  font-weight: 400;
   color: var(--ghost, #f0f0f0);
   text-transform: uppercase;
   line-height: 0.9;
@@ -332,7 +335,7 @@
 /* BLOCK B — challenge */
 .narrative-block--b {
   font-family: var(--font-display, sans-serif);
-  font-size: clamp(1rem, 2.2vw, 2rem);
+  font-size: clamp(1rem, min(2.2vw, 3.6vh), 2rem);
   font-weight: 300;
   color: rgba(240, 240, 240, 0.85);
   max-width: 640px;
@@ -350,8 +353,8 @@
 
 .narrative-metric {
   font-family: var(--font-display, sans-serif);
-  font-size: clamp(4rem, 9vw, 8rem);
-  font-weight: 900;
+  font-size: clamp(3rem, min(9vw, 14vh), 8rem);
+  font-weight: 400;
   color: var(--sacred, #C9A84C);
   line-height: 1;
   text-shadow: 0 0 40px rgba(201, 168, 76, 0.5);
@@ -450,15 +453,14 @@
   justify-content: center;
   cursor: pointer;
   border-radius: 50%;
-  transition: color 0.3s, border-color 0.3s, background 0.3s;
-  animation: rotateSlow 6s linear infinite;
+  transition: color 0.3s, border-color 0.3s, background 0.3s, transform 0.5s var(--ease-cinematic);
 }
 
 .project-overlay__close:hover {
   color: var(--sacred, #C9A84C);
   border-color: var(--sacred, #C9A84C);
   background: rgba(201, 168, 76, 0.08);
-  animation-play-state: paused;
+  transform: rotate(90deg);
 }
 
 @keyframes rotateSlow {
@@ -683,4 +685,27 @@
   letter-spacing: 0.25em;
   color: rgba(240, 240, 240, 0.3);
   text-transform: uppercase;
+}
+
+/* ── Small screens ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .cartography-realm-label { top: 1rem; left: 1rem; }
+  .cartography-progress-bar { right: 0.9rem; }
+  .progress-track { height: 100px; }
+
+  /* Orbit info moves under the orb instead of a cramped side column */
+  .orbit-meta {
+    top: auto;
+    bottom: 7.5rem;
+    left: 1.25rem;
+    right: 1.25rem;
+    max-width: none;
+    transform: translateY(20px);
+  }
+  .orbit-meta--visible { transform: translateY(0); }
+  .orbit-meta__pull-quote { display: none; }
+
+  .scroll-hint span { letter-spacing: 0.35em; margin-right: -0.35em; }
+  .transit-caption { white-space: normal; max-width: 80vw; line-height: 1.8; }
+  .final-map-text { width: 85vw; letter-spacing: 0.25em; line-height: 1.8; }
 }

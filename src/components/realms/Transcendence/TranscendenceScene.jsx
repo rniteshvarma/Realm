@@ -6,6 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 import { useStore } from '../../../store/useStore'
+import { useRealmFrameloop } from '../../../hooks/useRealmActive'
 import singularityFrag from '../../../gl/shaders/singularity.frag.glsl?raw'
 import './Transcendence.css'
 
@@ -95,12 +96,16 @@ function TranscendenceParticles() {
 export default function TranscendenceScene() {
   const containerRef = useRef(null)
   const [scrollProgress, setScrollProgress] = useState(0)
+  const frameloop = useRealmFrameloop()
 
   useEffect(() => {
+    const el = containerRef.current
     const trigger = ScrollTrigger.create({
-      trigger: containerRef.current,
+      trigger: el,
       start: 'top top',
-      end: '+=300vh',
+      // Pin for exactly the room the section reserves (300vh − 100vh).
+      end: () => `+=${el.parentElement.offsetHeight - el.offsetHeight}`,
+      invalidateOnRefresh: true,
       pin: true,
       scrub: 1,
       onUpdate: (self) => {
@@ -113,7 +118,7 @@ export default function TranscendenceScene() {
   return (
     <div className="transcendence-realm" ref={containerRef}>
       <div className="transcendence-canvas-container">
-        <Canvas>
+        <Canvas frameloop={frameloop} dpr={[1, 1.5]}>
           <SingularityEffect scrollProgress={scrollProgress} />
           <TranscendenceParticles />
         </Canvas>

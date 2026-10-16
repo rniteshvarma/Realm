@@ -1,5 +1,5 @@
 .frequency-realm {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   position: relative;
   background: #050510;
@@ -9,8 +9,8 @@
 /* ── Header ─────────────────────────────────────────── */
 .freq-header {
   position: absolute;
-  top: 2.5rem;
-  left: 3rem;
+  top: 2rem;
+  left: 2rem;
   z-index: 10;
   pointer-events: none;
 }
@@ -91,8 +91,10 @@
 /* ── Resonance button ───────────────────────────────── */
 .resonance-btn {
   position: absolute;
-  bottom: 3rem;
-  right: 3rem;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);   /* bottom-right belongs to the constellation nav */
+  white-space: nowrap;
   z-index: 10;
   background: transparent;
   border: 1px solid rgba(0, 245, 255, 0.2);
@@ -130,4 +132,11 @@
 @keyframes resonancePulse {
   0%, 100% { box-shadow: 0 0 5px var(--sacred-glow); }
   50% { box-shadow: 0 0 20px var(--sacred-glow); }
+}
+
+@media (max-width: 768px) {
+  .freq-header { top: 1rem; left: 1rem; }
+  .freq-progress { left: 1rem; gap: 0.9rem; }
+  .freq-progress-node span { display: none; }   /* dots only — labels crowd the 3D text */
+  .resonance-btn { bottom: 1.5rem; font-size: 0.55rem; padding: 0.55rem 1rem; }
 }

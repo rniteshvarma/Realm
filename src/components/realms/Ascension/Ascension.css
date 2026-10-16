@@ -52,14 +52,16 @@
 }
 
 .ascension-line {
-    font-family: 'Space Grotesk', sans-serif;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 1.2rem;
+    font-family: var(--font-body);
+    color: rgba(255, 255, 255, 0.55);
+    font-size: clamp(0.8rem, 1.6vw, 1.2rem);
     letter-spacing: 0.3em;
+    line-height: 1.6;
     margin: 0.8rem 0;
     opacity: 0;
     transform: translateY(10px);
-    transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: opacity 1.2s cubic-bezier(0.23, 1, 0.32, 1),
+                transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .ascension-line.active {
@@ -68,8 +70,9 @@
 }
 
 .ascension-line.line-4 {
-    font-size: 3.5rem;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 7vw, 4.5rem);
+    font-weight: 400;
     color: #C9A84C;
     margin-top: 3rem;
     letter-spacing: 0.1em;
@@ -77,7 +80,7 @@
 }
 
 .ascension-line.line-5 {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.9rem;
     color: #00F5FF;
     margin-bottom: 2rem;
@@ -94,11 +97,14 @@
 .realm-signature {
     position: absolute;
     bottom: 2rem;
+    left: 0;
     width: 100%;
     display: flex;
-    justify-content: space-between;
-    padding: 0 3rem;
-    font-family: 'JetBrains Mono', monospace;
+    justify-content: center;   /* corners belong to the global HUD */
+    flex-wrap: wrap;
+    gap: 0.75rem 2.5rem;
+    padding: 0 2rem;
+    font-family: var(--font-mono);
     font-size: 0.65rem;
     color: rgba(255, 255, 255, 0.2);
     z-index: 20;
@@ -131,4 +137,49 @@
 
 .sig-right:hover {
     color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Contact links ───────────────────────────────── */
+.ascension-contact {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 1.2s cubic-bezier(0.23, 1, 0.32, 1), transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+    pointer-events: none;
+}
+
+.ascension-contact.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.ascension-contact a {
+    color: var(--sacred);
+    text-decoration: none;
+    padding: 0.5rem 0.25rem;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.3);
+    transition: color 0.3s, border-color 0.3s, text-shadow 0.3s;
+}
+
+.ascension-contact a:hover,
+.ascension-contact a:focus-visible {
+    color: #fff;
+    border-color: #fff;
+    text-shadow: 0 0 12px var(--sacred-glow);
+    outline: none;
+}
+
+@media (max-width: 768px) {
+    .ascension-line { letter-spacing: 0.18em; margin: 0.5rem 0; }
+    .ascension-line.line-4 { margin-top: 1.5rem; }
+    .ascension-line.line-6 { margin-top: 1rem; padding-top: 1rem; }
+    .realm-signature { bottom: 1rem; font-size: 0.55rem; }
 }

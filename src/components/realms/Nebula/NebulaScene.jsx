@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useStore } from '../../../store/useStore'
 import { SETTINGS } from '../../../utils/deviceTier'
+import { useRealmFrameloop } from '../../../hooks/useRealmActive'
 
 import NebulaParticles from './NebulaParticles'
 import './Nebula.css'
@@ -33,6 +34,7 @@ function NebulaInner({ containerRef, onActChange }) {
 export default function NebulaScene() {
   const containerRef = useRef(null)
   const [activeAct, setActiveAct] = useState(0)
+  const frameloop = useRealmFrameloop()
 
   const handleActChange = useCallback((act) => {
     setActiveAct(act)
@@ -56,7 +58,7 @@ export default function NebulaScene() {
             stencil: false
           }}
           dpr={[0.85, SETTINGS.pixelRatio]}
-          frameloop="always"
+          frameloop={frameloop}
         >
           <NebulaInner 
             containerRef={containerRef} 

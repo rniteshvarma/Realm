@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useStore } from '../../../store/useStore'
+import { useRealmFrameloop } from '../../../hooks/useRealmActive'
 import ascensionWallsFrag from '../../../gl/shaders/ascensionWalls.frag.glsl?raw'
 import './Ascension.css'
 
@@ -162,9 +163,11 @@ function AscensionEnvironment() {
 export default function AscensionScene() {
   const containerRef = useRef(null)
   const [scrollProgress, setScrollProgress] = useState(0)
+  const frameloop = useRealmFrameloop()
   const [showSequence, setShowSequence] = useState(false)
   const [lineIndex, setLineIndex] = useState(-1)
   const [whiteOut, setWhiteOut] = useState(false)
+  const timersRef = useRef([])
   const lines = [
     "YOU HAVE REACHED THE END OF REALM.",
     "BUT REALM IS STILL GROWING.",
@@ -176,10 +179,13 @@ export default function AscensionScene() {
   ]
 
   useEffect(() => {
+    const el = containerRef.current
     const trigger = ScrollTrigger.create({
-      trigger: containerRef.current,
+      trigger: el,
       start: 'top top',
-      end: '+=300vh',
+      // Pin for exactly the room the section reserves (300vh − 100vh).
+      end: () => `+=${el.parentElement.offsetHeight - el.offsetHeight}`,
+      invalidateOnRefresh: true,
       pin: true,
       scrub: 1,
       onUpdate: (self) => {
@@ -197,18 +203,20 @@ export default function AscensionScene() {
 
       let delay = 1500
       lines.forEach((_, i) => {
-        setTimeout(() => setLineIndex(i), delay)
+        timersRef.current.push(setTimeout(() => setLineIndex(i), delay))
         delay += (i === 4 ? 3500 : 3000)
       });
     }
   }, [scrollProgress > 0.05, showSequence])
+
+  useEffect(() => () => timersRef.current.forEach(clearTimeout), [])
 
   return (
     <div className={`ascension-realm ${scrollProgress > 0.01 ? 'visible' : ''}`} ref={containerRef}>
       <div className={`white-out-flash ${whiteOut ? 'active' : ''}`} />
       
       <div className="ascension-canvas-container">
-        <Canvas camera={{ position: [0, 5, 15], fov: 45 }}>
+        <Canvas camera={{ position: [0, 5, 15], fov: 45 }} frameloop={frameloop} dpr={[1, 1.5]}>
           <AscensionEnvironment />
         </Canvas>
       </div>
@@ -222,11 +230,21 @@ export default function AscensionScene() {
             {line}
           </div>
         ))}
+
+        {/* Plain, always-clickable contact links (the 3D portals are unlabeled) */}
+        <nav
+          className={`ascension-contact ${lineIndex >= lines.length - 1 ? 'active' : ''}`}
+          aria-label="Contact"
+        >
+          <a href="mailto:hello@niteshvarma.com">EMAIL</a>
+          <span aria-hidden="true">·</span>
+          <a href="https://linkedin.com/in/niteshvarma" target="_blank" rel="noopener noreferrer">LINKEDIN</a>
+        </nav>
       </div>
 
       <div className="realm-signature">
         <div className="sig-left">
-          REALM v2.0 — BUILT IN THE DARK — 2024
+          REALM v2.0 — BUILT IN THE DARK — {new Date().getFullYear()}
           <span className="pulsing-dot" />
         </div>
         <div className="sig-right" title="This entire experience was hand-coded. No templates. No drag-and-drop. Every frame is intentional.">

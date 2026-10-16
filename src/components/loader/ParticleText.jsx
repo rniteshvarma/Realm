@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useStore } from '../../store/useStore'
 
@@ -10,6 +10,9 @@ function Particles({ text }) {
   const pointsRef = useRef()
   const materialRef = useRef()
   const performanceLow = useStore(state => state.performanceLow)
+  const { viewport, gl } = useThree()
+  // Text is laid out 20 units wide — shrink it to fit narrow/portrait screens
+  const fitScale = Math.min(1, (viewport.width * 0.88) / 20)
 
   // 1. Create a canvas texture for the text
   const texture = useMemo(() => {
@@ -84,18 +87,21 @@ function Particles({ text }) {
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uProgress: { value: 0 }, // 0 = exploded, 1 = assembled text
+    uPixelRatio: { value: 1 },
   }), [])
+  uniforms.uPixelRatio.value = gl.getPixelRatio()
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = state.clock.elapsedTime
-      // Animate progress smoothly towards 1
-      materialRef.current.uniforms.uProgress.value += (1.0 - materialRef.current.uniforms.uProgress.value) * 0.02
+      // Animate progress smoothly towards 1 (frame-rate independent)
+      const k = 1 - Math.pow(0.98, delta * 60)
+      materialRef.current.uniforms.uProgress.value += (1.0 - materialRef.current.uniforms.uProgress.value) * k
     }
   })
 
   return (
-    <points ref={pointsRef}>
+    <points ref={pointsRef} scale={fitScale}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"

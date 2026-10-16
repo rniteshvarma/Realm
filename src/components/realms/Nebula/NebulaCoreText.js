@@ -45,17 +45,24 @@ export async function extractTextPositions(
   ctx.textBaseline = 'middle'
 
   // Apply letter spacing by rendering character-by-character
-  const letterSpacing = fontSize * letterSpacingEm
   const chars = text.split('')
+  const measure = (size) => {
+    ctx.font = `bold ${size}px "${font}"`
+    const spacing = size * letterSpacingEm
+    let total = 0
+    const widths = chars.map(c => {
+      const w = ctx.measureText(c).width
+      total += w + spacing
+      return w
+    })
+    return { widths, spacing, total: total - spacing } // no trailing space
+  }
 
-  // Measure total width including letter spacing
-  let totalWidth = 0
-  const charWidths = chars.map(c => {
-    const w = ctx.measureText(c).width
-    totalWidth += w + letterSpacing
-    return w
-  })
-  totalWidth -= letterSpacing // no trailing space
+  // Shrink long phrases so they never clip at the canvas edge
+  let m = measure(fontSize)
+  const maxWidth = canvasWidth * 0.94
+  if (m.total > maxWidth) m = measure(fontSize * (maxWidth / m.total))
+  const { widths: charWidths, spacing: letterSpacing, total: totalWidth } = m
 
   let startX = canvasWidth / 2 - totalWidth / 2
   const midY = canvasHeight / 2
@@ -133,6 +140,11 @@ export async function extractManifestoPositions(
     totalWidth += wordW + (wi < words.length - 1 ? ctx.measureText(' ').width * 1.5 : 0)
   })
 
+  // Shrink the whole line about the centre if it would clip at the edges
+  const k  = Math.min(1, (canvasWidth * 0.94) / totalWidth)
+  const tx = (x) => canvasWidth / 2 + (x - canvasWidth / 2) * k
+  ctx.setTransform(k, 0, 0, k, (canvasWidth / 2) * (1 - k), (canvasHeight / 2) * (1 - k))
+
   // Second pass: render with word positions tracked
   let curX = canvasWidth / 2 - totalWidth / 2
   const wordRanges = [] // { minX, maxX } in pixel space
@@ -145,11 +157,13 @@ export async function extractManifestoPositions(
       curX += meta.charWidths[ci] + letterSpacing
     })
     wordRanges.push({
-      minX: wordStartX / canvasWidth,
-      maxX: curX / canvasWidth
+      minX: tx(wordStartX) / canvasWidth,
+      maxX: tx(curX) / canvasWidth
     })
     curX += ctx.measureText(' ').width * 1.5 // word gap
   })
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0)
 
   // Sample pixels and tag each with word index based on X position
   const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight)

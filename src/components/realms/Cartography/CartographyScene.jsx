@@ -15,7 +15,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 import { useStore } from '../../../store/useStore'
 import { useCartographyAudio } from './useCartographyAudio'
-import { PROJECTS, buildOrbitalPath, getProjectPhase } from './cartographyData'
+import { PROJECTS, PHASE, buildOrbitalPath, getProjectPhase } from './cartographyData'
+import { useRealmFrameloop } from '../../../hooks/useRealmActive'
 import OrbSystem from './OrbSystem'
 import InteriorWorld from './InteriorWorld'
 import ProjectOverlay from './ProjectOverlay'
@@ -116,7 +117,7 @@ function GoldThread({ path, visible, opacity }) {
 
   useFrame(() => {
     if (matRef.current) {
-      matRef.current.opacity += (visible ? opacity : 0 - matRef.current.opacity) * 0.03
+      matRef.current.opacity += ((visible ? opacity : 0) - matRef.current.opacity) * 0.03
     }
   })
 
@@ -130,10 +131,16 @@ function GoldThread({ path, visible, opacity }) {
 // ═══════════════════════════════════════════════════════════════════════
 //  CAMERA CONTROLLER
 // ═══════════════════════════════════════════════════════════════════════
+// Final-map vantage point: back and slightly above, framing every orb
+const OVERVIEW_POS    = new THREE.Vector3(1, 7, 22)
+const OVERVIEW_TARGET = new THREE.Vector3(1, 0.5, -21)
+
 function CameraController({ scrollProgress, currentProjectIndex, currentPhase }) {
   const { camera } = useThree()
   const lookTarget  = useRef(new THREE.Vector3(0, 0, -10))
   const pathsRef    = useRef([])
+  const tmpPos      = useMemo(() => new THREE.Vector3(), [])
+  const tmpLook     = useMemo(() => new THREE.Vector3(), [])
 
   // Build paths once
   useEffect(() => {
@@ -155,12 +162,18 @@ function CameraController({ scrollProgress, currentProjectIndex, currentPhase })
     const path        = pathsRef.current[projIdx]
     if (!path) return
 
-    const pt = path.getPoint(Math.min(zoneProgress, 0.99))
-    camera.position.lerp(pt, 0.08)
+    path.getPoint(Math.min(zoneProgress, 0.99), tmpPos)
+    tmpLook.copy(PROJECTS[projIdx].orbPosition)
 
-    // Look at current orb center (damped)
-    const proj = PROJECTS[projIdx]
-    lookTarget.current.lerp(proj.orbPosition, 0.05)
+    // Last world: instead of idling inside it, rise out to the overview
+    if (projIdx === numProjects - 1) {
+      const k = THREE.MathUtils.smoothstep(zoneProgress, PHASE.INSIDE_END, 0.92)
+      tmpPos.lerp(OVERVIEW_POS, k)
+      tmpLook.lerp(OVERVIEW_TARGET, k)
+    }
+
+    camera.position.lerp(tmpPos, 0.08)
+    lookTarget.current.lerp(tmpLook, 0.05)
     camera.lookAt(lookTarget.current)
   })
 
@@ -254,16 +267,18 @@ function NarrativeBlocks({ project, phase, phaseProgress }) {
 
   const [countedNum, setCountedNum] = useState(0)
   useEffect(() => {
-    if (!showC || !metricNum.digits) return
+    if (!showC || !metricNum.digits) { setCountedNum(0); return }
+    let raf = 0
     const start = performance.now()
     const dur   = 1500
     const tick  = (now) => {
       const p  = Math.min((now - start) / dur, 1)
       const ep = 1 - Math.pow(1 - p, 3) // ease out cubic
       setCountedNum(Math.round(ep * metricNum.digits))
-      if (p < 1) requestAnimationFrame(tick)
+      if (p < 1) raf = requestAnimationFrame(tick)
     }
-    requestAnimationFrame(tick)
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
   }, [showC, metricNum])
 
   return (
@@ -419,6 +434,7 @@ function CartographyScene3D({
   isMobile,
   mouseNDC,
 }) {
+  const lastEscape = projectIndex === PROJECTS.length - 1 && phase === 'escape'
   const paths = useMemo(() => {
     return PROJECTS.map((proj, i) => {
       const prevOrb = i > 0 ? PROJECTS[i - 1].orbPosition : null
@@ -451,6 +467,7 @@ function CartographyScene3D({
           key={proj.id}
           project={proj}
           phase={i === projectIndex ? phase : 'idle'}
+          activePhase={lastEscape ? 'escape' : phase}
           phaseProgress={i === projectIndex ? phaseProgress : 0}
           mouseNDC={mouseNDC}
           isActive={i === projectIndex}
@@ -461,7 +478,7 @@ function CartographyScene3D({
       {/* Active project interior */}
       <InteriorWorld
         project={PROJECTS[projectIndex]}
-        phase={phase}
+        phase={lastEscape ? 'idle' : phase}
         phaseProgress={phaseProgress}
         onReadMore={onReadMore}
       />
@@ -513,7 +530,9 @@ export default function CartographyScene() {
   const [finalMap,        setFinalMap]        = useState(false)
   const [warpActive,      setWarpActive]      = useState(false)
   const [overlayProject,  setOverlayProject]  = useState(null)
-  const [mouseNDC,        setMouseNDC]        = useState({ x: 0, y: 0 })
+  // Mutated in place and read inside useFrame — no React re-render per move
+  const mouseNDC = useRef({ x: 0, y: 0 }).current
+  const frameloop = useRealmFrameloop()
 
   // Audio
   useCartographyAudio({ phase, projectIndex, phaseProgress, zoneProgress })
@@ -521,10 +540,8 @@ export default function CartographyScene() {
   // ── Mouse tracking ─────────────────────────────────────────────────
   useEffect(() => {
     const onMove = (e) => {
-      setMouseNDC({
-        x: (e.clientX / window.innerWidth) * 2 - 1,
-        y: -((e.clientY / window.innerHeight) * 2 - 1),
-      })
+      mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1
+      mouseNDC.y = -((e.clientY / window.innerHeight) * 2 - 1)
     }
     window.addEventListener('mousemove', onMove, { passive: true })
     return () => window.removeEventListener('mousemove', onMove)
@@ -580,6 +597,7 @@ export default function CartographyScene() {
         <Canvas
           gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
           dpr={isMobile ? [1, 1] : [1, 1.5]}
+          frameloop={frameloop}
           style={{ position: 'absolute', inset: 0, background: '#02040A' }}
         >
           <CartographyScene3D

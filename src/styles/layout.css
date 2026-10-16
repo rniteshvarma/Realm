@@ -54,6 +54,9 @@
 /* ── Realm 2 (The Forge) — no tunnel, full-screen canvas ── */
 
 /* ── Persistent UI ──────────────────────────────────── */
+/* Corner ownership (realm overlays must stay out of these):
+   top-right    → audio toggle + anomalies tracker
+   bottom-right → constellation nav                                   */
 .persistent-ui {
   position: fixed;
   top: 2rem;
@@ -65,12 +68,14 @@
 /* ── Constellation Nav ──────────────────────────────── */
 .constellation-nav {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  width: 150px;
+  height: 190px;
   z-index: 980;
-  cursor: none;
   opacity: 0.85;
   transition: opacity 0.3s;
+  touch-action: manipulation;
 }
 
 .constellation-nav:hover {
@@ -90,5 +95,21 @@
   transition: opacity 0.2s;
   white-space: nowrap;
   text-transform: uppercase;
+  transform: translateX(-100%);
 }
 
+
+/* ── Small screens ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .persistent-ui {
+    top: 1rem;
+    right: 1rem;
+  }
+  .constellation-nav {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: 105px;
+    height: 133px;
+    opacity: 0.7;
+  }
+}

@@ -9,6 +9,7 @@ import { Reflector as ThreeReflector } from 'three/examples/jsm/objects/Reflecto
 import { useStore } from '../../../store/useStore'
 import { getLenis } from '../../../hooks/useScroll'
 import { SETTINGS } from '../../../utils/deviceTier'
+import { useRealmFrameloop } from '../../../hooks/useRealmActive'
 import heavenEngine from '../../../audio/HeavenAudioEngine'
 import { generateShards } from './FractureGenerator'
 import { OrigamiCrane, NavigationCompass, CodeFragment } from './Objects'
@@ -156,7 +157,7 @@ function TheLookingGlass({ scrollProgress, shatterTriggered, onMirrorClick }) {
     customMaterial.uniforms.uClarity.value = clarity
 
     // Handprint intensity triggers at 90%
-    if (scrollProgress >= 0.9 && !mirrorBroken) {
+    if (scrollProgress >= 0.88 && !mirrorBroken) {
         customMaterial.uniforms.uHandIntensity.value += (1.0 - customMaterial.uniforms.uHandIntensity.value) * 0.05
     } else {
         customMaterial.uniforms.uHandIntensity.value += (0.0 - customMaterial.uniforms.uHandIntensity.value) * 0.1
@@ -183,7 +184,7 @@ function TheLookingGlass({ scrollProgress, shatterTriggered, onMirrorClick }) {
        {/* Intact Mirror Wrapper */}
        <group 
          ref={mirrorWrapperRef} 
-         onClick={scrollProgress >= 0.9 ? onMirrorClick : null}
+         onClick={scrollProgress >= 0.88 ? onMirrorClick : null}
          onPointerOver={() => hoverState.current = true}
          onPointerOut={() => hoverState.current = false}
        />
@@ -364,14 +365,21 @@ export default function SignalScene() {
   
   const [scrollProgress, setScrollProgress] = useState(0)
   const [shattered, setShattered] = useState(false)
+  const shatteredRef = useRef(false)
+  const lockedRef = useRef(false)
+  const [awaitingShatter, setAwaitingShatter] = useState(false)
+  const frameloop = useRealmFrameloop()
   const setSignalShattered = useStore(s => s.setSignalShattered)
   const [objectsVisible, setObjectsVisible] = useState(false)
 
   useEffect(() => {
+    const el = containerRef.current
     const trigger = ScrollTrigger.create({
-      trigger: containerRef.current,
+      trigger: el,
       start: 'top top',
-      end: '+=400vh',
+      // Pin for exactly the room the section reserves (400vh − 100vh).
+      end: () => `+=${el.parentElement.offsetHeight - el.offsetHeight}`,
+      invalidateOnRefresh: true,
       pin: true,
       scrub: 1,
       onUpdate: (self) => {
@@ -379,7 +387,9 @@ export default function SignalScene() {
         setScrollProgress(p)
 
         const lenis = getLenis()
-        if (p >= 0.9 && !shattered) {
+        if (p >= 0.9 && !shatteredRef.current && !lockedRef.current) {
+            lockedRef.current = true
+            setAwaitingShatter(true)
             // Prevent fast scrolls from bleeding into the next section before locking
             const maxPos = self.start + (self.end - self.start) * 0.9
             if (self.scroll() > maxPos) {
@@ -392,15 +402,22 @@ export default function SignalScene() {
             // Lock Scroll
             if (lenis) lenis.stop()
             setCursorState('hover-glass') // trigger hand cursor
+        } else if (p < 0.85 && lockedRef.current && !shatteredRef.current) {
+            // Visitor navigated away (constellation nav) — release the lock
+            lockedRef.current = false
+            setAwaitingShatter(false)
+            setCursorState('default')
         }
       }
     })
     return () => trigger.kill()
-  }, [setCursorState, shattered])
+  }, [setCursorState])
 
   const handleShatter = () => {
-    if (shattered) return
+    if (shatteredRef.current) return
+    shatteredRef.current = true
     setShattered(true)
+    setAwaitingShatter(false)
     setSignalShattered(true)
     setCursorState('default')
     
@@ -446,7 +463,7 @@ export default function SignalScene() {
          </div>
       </div>
 
-      <div className={`shatter-prompt ${scrollProgress >= 0.9 && !shattered ? 'visible' : ''}`}>
+      <div className={`shatter-prompt ${awaitingShatter ? 'visible' : ''}`}>
          BREAK THE GLASS TO MOVE FORWARD.
       </div>
 
@@ -456,6 +473,7 @@ export default function SignalScene() {
       <Canvas
         gl={{ antialias: SETTINGS.TIER >= 2, alpha: false, powerPreference: 'high-performance', stencil: false }}
         dpr={[0.85, SETTINGS.pixelRatio]}
+        frameloop={frameloop}
         style={{ position: 'absolute', inset: 0 }}
       >
         <PerspectiveCamera makeDefault position={[0, 2.5, 0]} fov={60} />

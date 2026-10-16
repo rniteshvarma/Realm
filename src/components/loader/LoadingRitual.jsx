@@ -18,6 +18,7 @@ export default function LoadingRitual() {
   const { setReady, setLoadProgress, discoverEgg } = useStore()
   const egg5TimerRef  = useRef(null)
   const egg5FoundRef  = useRef(false)
+  const wordmarkShownRef = useRef(false)
 
   useEffect(() => {
     const tl = gsap.timeline({
@@ -30,7 +31,8 @@ export default function LoadingRitual() {
         counterRef.current.innerText = `${Math.floor(val)}%`
       }
       // At 60%, reveal REALM wordmark letter-by-letter
-      if (val >= 60 && !showWordmark) {
+      if (val >= 60 && !wordmarkShownRef.current) {
+        wordmarkShownRef.current = true
         setShowWordmark(true)
       }
     }
@@ -53,7 +55,7 @@ export default function LoadingRitual() {
     })
 
     return () => tl.kill()
-  }, [setLoadProgress, showWordmark])
+  }, [setLoadProgress])
 
   // Animate wordmark in letter by letter
   useEffect(() => {
@@ -98,13 +100,20 @@ export default function LoadingRitual() {
     }
 
     clearTimeout(egg5TimerRef.current)
+    // The overlay unmounts under the pointer without a mouseout — reset the cursor
+    useStore.getState().setCursorState('default')
 
+    // Fallback in case the tween is interrupted; setReady is idempotent.
+    const fallback = setTimeout(() => setReady(), 1500)
     gsap.to(containerRef.current, {
       opacity: 0, scale: 1.1, filter: 'blur(20px)',
       duration: 1.2, ease: 'power3.inOut',
-      onComplete: () => setReady()
+      onComplete: () => { clearTimeout(fallback); setReady() }
     })
-    setTimeout(() => setReady(), 1500)
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEnter() }
   }
 
   return (
@@ -130,10 +139,13 @@ export default function LoadingRitual() {
             )}
           </>
         ) : (
-          <div 
+          <div
             className="loading-ritual__completion"
             onClick={handleEnter}
-            style={{ cursor: 'none' }}
+            onKeyDown={handleKeyDown}
+            role="button"
+            tabIndex={0}
+            aria-label="Enter the experience"
           >
             {/* Egg 5: sigil ghost behind particles */}
             {egg5Active && (
@@ -148,19 +160,15 @@ export default function LoadingRitual() {
             <div className="loading-ritual__particles-behind" style={{ pointerEvents: 'none', zIndex: 0 }}>
               <ParticleText text="NITESH VARMA" />
             </div>
-            <button 
-              className="loading-ritual__enter"
-              data-cursor="true"
-              style={{ zIndex: 999, pointerEvents: 'none', position: 'relative' }}
-            >
+            <span className="loading-ritual__enter" aria-hidden="true">
               [ CLICK TO INITIATE ]
-            </button>
-            <div className="loading-ritual__wordmark wordmark-completion" style={{ pointerEvents: 'none' }}>
+            </span>
+            <div className="loading-ritual__wordmark wordmark-completion" aria-hidden="true">
               {'REALM'.split('').map((l, i) => (
                 <span key={i} className="wordmark-letter">{l}</span>
               ))}
             </div>
-            <div className="click-overlay" style={{ position: 'absolute', inset: 0, zIndex: 10, cursor: 'none' }} />
+            <div className="click-overlay" data-cursor="true" />
           </div>
         )}
       </div>

@@ -12,7 +12,6 @@ export default function LoreTracker() {
   const eggs = [
     { id: 'patient',     label: 'THE FIRST WORD',      found: loreEggs.patient },
     { id: 'morse',       label: 'THE HIDDEN SIGNAL',   found: loreEggs.morse },
-    { id: 'ninth-stone', label: 'THE NINTH STONE',     found: loreEggs['ninth-stone'] },
     { id: 'freq-ghost',  label: 'THE ENDLESS FREQ',    found: loreEggs['freq-ghost'] },
     { id: 'observer',    label: 'THE OBSERVER',        found: loreEggs.observer },
   ]
@@ -36,7 +35,7 @@ export default function LoreTracker() {
     <div className={`lore-tracker ${allEggsFound ? 'all-found' : ''}`} ref={containerRef}>
       <div className="lore-header">
         <span className="lore-title">ANOMALIES</span>
-        <span className="lore-count">[{foundCount}/5]</span>
+        <span className="lore-count">[{foundCount}/{eggs.length}]</span>
       </div>
       
       <div className="lore-grid">

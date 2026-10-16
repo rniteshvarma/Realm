@@ -6,6 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useStore } from '../../../store/useStore'
 import { SETTINGS } from '../../../utils/deviceTier'
+import { useRealmFrameloop } from '../../../hooks/useRealmActive'
 import heavenEngine from '../../../audio/HeavenAudioEngine'
 import { sfxSacredReveal } from '../../../audio/SFXLibrary'
 import './Frequency.css'
@@ -151,31 +152,70 @@ function TravelCamera({ scrollProgress }) {
 }
 
 // ── Segment label floating in 3D ──────────────────────────────────────
+// Camera z = 15 - p*160, i.e. 32 units per segment. Each label sits so the
+// camera is ~14 units in front of it mid-segment, fades in as its segment
+// begins and fades out before the camera flies through it — so the label on
+// screen always matches the active node in the left-hand progress list.
+const segmentAlpha = (local) => {
+  const fadeIn  = THREE.MathUtils.smoothstep(local, -0.15, 0.1)
+  const fadeOut = 1 - THREE.MathUtils.smoothstep(local, 0.6, 0.82)
+  return fadeIn * fadeOut
+}
+
 function SegmentLabel({ segment, index, scrollProgress }) {
-  const visible = Math.abs(scrollProgress * 5 - index) < 0.7
-  const z = -index * 32 + 8
+  const groupRef = useRef()
+  const titleRef = useRef()
+  const descRef  = useRef()
+  const z = -index * 32 - 15
+  const alphaRef = useRef(0)
+  // Deep indigo/violet titles vanish on the dark floor — lift them toward white
+  const titleColor = useMemo(
+    () => segment.colorB.clone().lerp(new THREE.Color('#ffffff'), 0.35).getStyle(),
+    [segment]
+  )
+
+  useFrame(({ camera, size }, delta) => {
+    const target = segmentAlpha(scrollProgress * 5 - index)
+    alphaRef.current += (target - alphaRef.current) * Math.min(1, delta * 8)
+    const a = alphaRef.current
+    if (groupRef.current) {
+      groupRef.current.visible = a > 0.01
+      // Keep the widest title (~16 units) inside ~85% of the view width at
+      // the current distance, so it never spills off narrow/portrait screens
+      const d = Math.max(1, camera.position.z - z)
+      const viewW = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * (size.width / size.height)
+      groupRef.current.scale.setScalar(Math.min(1, (viewW * 0.85) / 16))
+    }
+    if (titleRef.current) titleRef.current.fillOpacity = a
+    if (descRef.current)  descRef.current.fillOpacity  = a * 0.75
+  })
 
   return (
-    <group position={[0, 8, z]} visible={visible}>
+    // Block is centred on eye level (camera looks along y≈2) so it scales in place
+    <group ref={groupRef} position={[0, 3, z]} visible={false}>
       <Text
+        ref={titleRef}
         fontSize={2.5}
-        color={segment.colorB.getStyle()}
+        color={titleColor}
         anchorX="center"
-        anchorY="top"
-        font={undefined}
+        anchorY="bottom"
+        position={[0, 0.5, 0]}
         letterSpacing={0.08}
+        fillOpacity={0}
       >
         {segment.name}
       </Text>
       <Text
+        ref={descRef}
         fontSize={0.45}
         color="#F0F0F0"
         anchorX="center"
         anchorY="top"
-        position={[0, -3.5, 0]}
+        position={[0, -0.3, 0]}
         maxWidth={14}
         textAlign="center"
-        fillOpacity={0.6}
+        lineHeight={1.5}
+        fillOpacity={0}
       >
         {segment.desc}
       </Text>
@@ -231,11 +271,17 @@ export default function FrequencyScene() {
   const fullScrollRef = useRef(false)
 
   // Scroll-driven progress 0→1 across the pinned section
+  const frameloop = useRealmFrameloop()
+
   useEffect(() => {
+    const el = containerRef.current
     const trigger = ScrollTrigger.create({
-      trigger: containerRef.current,
+      trigger: el,
       start: 'top top',
-      end: '+=500vh',
+      // Pin for exactly the room the section reserves (500vh − 100vh).
+      // ('+=500vh' was being read as 500px, leaving ~3000px of black.)
+      end: () => `+=${el.parentElement.offsetHeight - el.offsetHeight}`,
+      invalidateOnRefresh: true,
       pin: true,
       scrub: 1,
       onUpdate: (self) => {
@@ -298,6 +344,7 @@ export default function FrequencyScene() {
       <Canvas
         gl={{ antialias: SETTINGS.TIER >= 2, alpha: false, powerPreference: 'high-performance', stencil: false }}
         dpr={[1, SETTINGS.pixelRatio]}
+        frameloop={frameloop}
         style={{ position: 'absolute', inset: 0 }}
       >
         <FreqScene scrollProgress={scrollProg} />

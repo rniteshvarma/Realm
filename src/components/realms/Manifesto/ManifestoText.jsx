@@ -40,6 +40,7 @@ export default function ManifestoText() {
     el.addEventListener('mouseleave', onMouseLeave)
 
     return () => {
+      gsap.killTweensOf(chars)
       el.removeEventListener('mouseenter', onMouseEnter)
       el.removeEventListener('mouseleave', onMouseLeave)
     }
@@ -56,12 +57,14 @@ export default function ManifestoText() {
       <div className="word-row">
         <span className="word word-1" data-cursor="hover-drag">I</span>
         <span className="word word-1" data-cursor="hover-drag">BUILD</span>
-        <span className="word word-3 shattered" ref={word3Ref} data-cursor="hover-drag">
-          {'WORLDS'.split('').map((char, i) => (
-            <span key={i} style={{ display: 'inline-block' }}>{char}</span>
-          ))}
+        <span className="word-tail">
+          <span className="word word-3 shattered" ref={word3Ref} data-cursor="hover-drag">
+            {'WORLDS'.split('').map((char, i) => (
+              <span key={i} style={{ display: 'inline-block' }}>{char}</span>
+            ))}
+          </span>
+          <span className="word word-4" data-cursor="hover-drag">.</span>
         </span>
-        <span className="word word-4" data-cursor="hover-drag">.</span>
       </div>
     </h1>
   )

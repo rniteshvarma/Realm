@@ -1,5 +1,6 @@
 uniform float uTime;
 uniform float uProgress;
+uniform float uPixelRatio;
 
 attribute vec3 aOriginalPosition;
 attribute float aRandom;
@@ -27,7 +28,7 @@ void main() {
   
   vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
   
-  // Size attenuation
-  gl_PointSize = (22.0 * aRandom + 4.0) * (1.0 / -mvPosition.z);
+  // Size attenuation (DPR-aware so the name reads on retina screens)
+  gl_PointSize = (28.0 * aRandom + 22.0) * uPixelRatio * (1.0 / -mvPosition.z);
   gl_Position = projectionMatrix * mvPosition;
 }

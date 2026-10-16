@@ -12,8 +12,8 @@
 
 .loading-ritual__content {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -23,7 +23,7 @@
 .click-overlay {
   position: absolute;
   inset: 0;
-  z-index: 1000;
+  z-index: 20;
   cursor: pointer;
 }
 
@@ -85,6 +85,7 @@
 .wordmark-completion {
   position: absolute;
   bottom: 14%;
+  pointer-events: none;
   font-size: 0.7rem;
   letter-spacing: 0.8em;
   opacity: 0.5;
@@ -111,11 +112,27 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  outline: none;
+}
+
+.loading-ritual__completion:focus-visible .loading-ritual__enter {
+  color: var(--sacred);
+  text-shadow: 0 0 10px var(--sacred-glow);
+}
+
+.loading-ritual__particles-behind {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .loading-ritual__enter {
   position: absolute;
-  bottom: 20%;
+  bottom: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
   background: transparent;
   border: none;
   color: var(--ghost);
@@ -128,10 +145,10 @@
   padding: var(--space-sm) var(--space-md);
   transition: text-shadow 0.3s, color 0.3s;
   z-index: 10;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
-.loading-ritual__enter:hover {
+.loading-ritual__completion:hover .loading-ritual__enter {
   color: var(--sacred);
   text-shadow: 0 0 10px var(--sacred-glow);
 }
@@ -157,6 +174,8 @@
   position: absolute;
   bottom: var(--space-lg);
   left: var(--space-lg);
+  pointer-events: none;
+  z-index: 30;
   font-family: var(--font-mono);
   font-size: 0.7rem;
   letter-spacing: 0.1em;
@@ -186,4 +205,17 @@
 
 @keyframes fadeIn {
   to { opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  .loading-ritual__enter {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+  }
+  .loading-ritual__sound-hint {
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    bottom: var(--space-md);
+  }
 }

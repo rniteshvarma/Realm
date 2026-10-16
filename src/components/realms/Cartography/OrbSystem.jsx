@@ -114,6 +114,7 @@ export default function OrbSystem({
   phase,
   phaseProgress,
   mouseNDC,
+  activePhase,
   isActive,
   isMobile,
 }) {
@@ -157,7 +158,8 @@ export default function OrbSystem({
     if (!groupRef.current) return
 
     // Scale: shrink non-active orbs during descent/inside
-    const wantScale = (!isActive && (phase === 'descent' || phase === 'inside'))
+    // (inactive orbs receive phase 'idle', so key off the active world's phase)
+    const wantScale = (!isActive && (activePhase === 'descent' || activePhase === 'inside'))
       ? 0.0 // hide entirely
       : 1.0
     targetScaleRef.current += (wantScale - targetScaleRef.current) * 0.04

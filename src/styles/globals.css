@@ -3,7 +3,7 @@
    Design system CSS custom properties + full reset
 ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+/* Fonts are loaded once via <link> in index.html */
 
 /* ── Color Tokens — DARK HEAVEN PALETTE ───────────── */
 :root {
@@ -66,20 +66,39 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
+  overflow-x: clip;
 }
 
 html {
   overscroll-behavior: none;
+  overflow-x: clip;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* ── CRITICAL: Hide default cursor globally ────────── */
-*, *::before, *::after {
-  cursor: none !important;
+/* ── Lenis smooth-scroll (recommended base styles) ─── */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ── CRITICAL: Hide default cursor (mouse/trackpad only) */
+@media (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
 }
 
 /* ── Root ──────────────────────────────────────────── */
 #root {
-  width: 100vw;
+  width: 100%;
   position: relative;
   background: var(--void);
 }

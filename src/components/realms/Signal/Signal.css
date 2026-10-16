@@ -1,5 +1,5 @@
 .signal-realm {
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   position: relative;
   background: #080C14;
@@ -38,8 +38,9 @@
   left: 0;
   width: 100%;
   font-family: var(--font-mono);
-  font-size: clamp(1rem, 3vw, 2rem);
+  font-size: clamp(0.95rem, 3vw, 2rem);
   letter-spacing: 0.3em;
+  line-height: 1.6;
   color: var(--ghost);
   opacity: 0;
   transform: translateY(20px);
@@ -177,6 +178,10 @@
   bottom: 20%;
   left: 50%;
   transform: translateX(-50%);
+  width: max-content;
+  max-width: 90vw;
+  text-align: center;
+  line-height: 1.8;
   z-index: 20;
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -251,4 +256,11 @@
 
 @keyframes footerFadeIn {
   to { opacity: 0.4; }
+}
+
+@media (max-width: 768px) {
+  .signal-realm-label { top: 1rem; left: 1rem; }
+  .approach-text-container { width: 88%; }
+  .approach-line { letter-spacing: 0.18em; }
+  .shatter-prompt { letter-spacing: 0.25em; font-size: 0.6rem; }
 }

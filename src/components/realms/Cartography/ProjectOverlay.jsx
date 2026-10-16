@@ -84,6 +84,7 @@ export default function ProjectOverlay({ project, onClose }) {
     <div
       ref={overlayRef}
       className="project-overlay"
+      data-lenis-prevent
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       style={{ transform: 'translateY(100%)' }}
