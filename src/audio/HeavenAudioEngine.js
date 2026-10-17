@@ -110,7 +110,7 @@ class HeavenAudioEngine {
     if (!this.ctx || !this._running) return
 
     // If we are moving past the Signal realm (6), clear the glass shatter ambience
-    if (realmIndex > 6) {
+    if (realmIndex > 9) {
       this.clearExtraLayers()
     }
 
@@ -123,7 +123,10 @@ class HeavenAudioEngine {
       5: 98,      // Echo — G2, ethereal
       6: 110,     // Frequency — A2, resonant
       7: 123.47,  // Myth — B2, sacred
-      8: 130.81,  // Transcendence — C3, complete
+      8: 130.81,  // Dyson Swarm — C3
+      9: 146.83,  // Event Horizon — D3
+      10: 164.81, // Transcendence — E3
+      11: 196,    // Ascension — G3, complete
     }
     const targetFreq = realmFreqMap[realmIndex] ?? 55
     if (this.oscillators[0]) {

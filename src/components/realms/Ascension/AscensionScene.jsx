@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useStore } from '../../../store/useStore'
-import { useRealmFrameloop } from '../../../hooks/useRealmActive'
+import VoyageCanvas from '../../../voyage/VoyageCanvas'
 import ascensionWallsFrag from '../../../gl/shaders/ascensionWalls.frag.glsl?raw'
 import './Ascension.css'
 
@@ -163,18 +163,17 @@ function AscensionEnvironment() {
 export default function AscensionScene() {
   const containerRef = useRef(null)
   const [scrollProgress, setScrollProgress] = useState(0)
-  const frameloop = useRealmFrameloop()
   const [showSequence, setShowSequence] = useState(false)
   const [lineIndex, setLineIndex] = useState(-1)
   const [whiteOut, setWhiteOut] = useState(false)
   const timersRef = useRef([])
   const lines = [
-    "YOU HAVE REACHED THE END OF REALM.",
+    "THE HORIZON WAS NEVER THE END.",
     "BUT REALM IS STILL GROWING.",
     "IT IS A LIVING DOCUMENT.",
     "A SIGNAL STILL BEING SENT.",
     "NITESH VARMA",
-    "CREATIVE TECHNOLOGIST & DESIGNER",
+    "PRODUCT BUILDER · CO-FOUNDER",
     "IF YOU FELT SOMETHING — LET'S BUILD SOMETHING."
   ]
 
@@ -192,7 +191,9 @@ export default function AscensionScene() {
         setScrollProgress(self.progress)
       }
     })
-    return () => trigger.kill()
+    // Chapters can mount mid-scroll (remounts, nav jumps): sync right away
+    const syncRaf = requestAnimationFrame(() => { trigger.refresh(); trigger.vars.onUpdate?.(trigger) })
+    return () => { cancelAnimationFrame(syncRaf); trigger.kill() }
   }, [])
 
   useEffect(() => {
@@ -216,9 +217,9 @@ export default function AscensionScene() {
       <div className={`white-out-flash ${whiteOut ? 'active' : ''}`} />
       
       <div className="ascension-canvas-container">
-        <Canvas camera={{ position: [0, 5, 15], fov: 45 }} frameloop={frameloop} dpr={[1, 1.5]}>
+        <VoyageCanvas camera={{ position: [0, 5, 15], fov: 45 }} maxDpr={1.5}>
           <AscensionEnvironment />
-        </Canvas>
+        </VoyageCanvas>
       </div>
 
       <div className="ascension-ui">

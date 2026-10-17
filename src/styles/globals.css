@@ -71,6 +71,7 @@ body {
 
 html {
   overscroll-behavior: none;
+  overflow-x: hidden;   /* fallback for browsers without overflow: clip */
   overflow-x: clip;
   -webkit-tap-highlight-color: transparent;
 }
@@ -170,6 +171,7 @@ canvas {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   transition: border-color 0.3s, color 0.3s;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 

@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════
 
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { EffectComposer, ChromaticAberration } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
 import { PerspectiveCamera } from '@react-three/drei'
@@ -16,7 +16,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useStore } from '../../../store/useStore'
 import { useCartographyAudio } from './useCartographyAudio'
 import { PROJECTS, PHASE, buildOrbitalPath, getProjectPhase } from './cartographyData'
-import { useRealmFrameloop } from '../../../hooks/useRealmActive'
+import VoyageCanvas from '../../../voyage/VoyageCanvas'
 import OrbSystem from './OrbSystem'
 import InteriorWorld from './InteriorWorld'
 import ProjectOverlay from './ProjectOverlay'
@@ -349,7 +349,7 @@ function EntryTitle({ visible, onComplete }) {
 
   if (!visible) return null
 
-  const title = 'III. THE CARTOGRAPHY'
+  const title = 'THE CARTOGRAPHY'
   return (
     <div className="entry-title-container">
       <h1 ref={titleRef} className="entry-title">
@@ -382,7 +382,7 @@ function PersistentUI({ scrollProgress, projectIndex, phase, totalProjects }) {
     <>
       {/* TOP LEFT — realm label */}
       <div className={`cartography-realm-label ${dimmed ? 'dimmed' : ''}`}>
-        <div className="realm-label__title">III. THE CARTOGRAPHY</div>
+        <div className="realm-label__title">THE CARTOGRAPHY</div>
         <div className="realm-label__world">
           WORLD {projectIndex + 1} / {totalProjects}
         </div>
@@ -532,7 +532,6 @@ export default function CartographyScene() {
   const [overlayProject,  setOverlayProject]  = useState(null)
   // Mutated in place and read inside useFrame — no React re-render per move
   const mouseNDC = useRef({ x: 0, y: 0 }).current
-  const frameloop = useRealmFrameloop()
 
   // Audio
   useCartographyAudio({ phase, projectIndex, phaseProgress, zoneProgress })
@@ -577,7 +576,9 @@ export default function CartographyScene() {
       }
     })
 
-    return () => trigger.kill()
+    // Chapters can mount mid-scroll (remounts, nav jumps): sync right away
+    const syncRaf = requestAnimationFrame(() => { trigger.refresh(); trigger.vars.onUpdate?.(trigger) })
+    return () => { cancelAnimationFrame(syncRaf); trigger.kill() }
   }, [])
 
   const handleReadMore = useCallback(() => {
@@ -594,10 +595,9 @@ export default function CartographyScene() {
       <div className="cartography-sticky">
 
         {/* ── 3D Canvas ── */}
-        <Canvas
-          gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-          dpr={isMobile ? [1, 1] : [1, 1.5]}
-          frameloop={frameloop}
+        <VoyageCanvas
+          gl={{ antialias: !isMobile, alpha: false }}
+          maxDpr={isMobile ? 1 : 1.5}
           style={{ position: 'absolute', inset: 0, background: '#02040A' }}
         >
           <CartographyScene3D
@@ -612,7 +612,7 @@ export default function CartographyScene() {
             isMobile={isMobile}
             mouseNDC={mouseNDC}
           />
-        </Canvas>
+        </VoyageCanvas>
 
         {/* ── HTML Overlays ── */}
 

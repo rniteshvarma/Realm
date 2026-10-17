@@ -11,7 +11,12 @@ export default function AudioVisualizer({ enabled, onToggle }) {
   const canvasRef = useRef(null)
   const rafRef = useRef(null)
 
-  const draw = useCallback(() => {
+  const lastRef = useRef(0)
+  const draw = useCallback((now = 0) => {
+    rafRef.current = requestAnimationFrame(draw)
+    // A 40×20 meter doesn't need 120fps — 30 is plenty
+    if (now - lastRef.current < 33) return
+    lastRef.current = now
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -56,8 +61,6 @@ export default function AudioVisualizer({ enabled, onToggle }) {
       ctx.lineTo(W, H / 2 + pulse)
       ctx.stroke()
     }
-
-    rafRef.current = requestAnimationFrame(draw)
   }, [enabled])
 
   useEffect(() => {

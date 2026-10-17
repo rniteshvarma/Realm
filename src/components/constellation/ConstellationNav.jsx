@@ -12,15 +12,18 @@ import { getLenis } from '../../hooks/useScroll'
 // Hand-crafted organic constellation positions (like Orion's Belt)
 // Each: [x, y, mass (node size), name, realm index]
 const STARS = [
-  { x: 60,  y: 12,  mass: 4.5, name: 'THE GATE',          realm: 0 },
-  { x: 22,  y: 30,  mass: 4,   name: 'THE MANIFESTO',     realm: 1 },
-  { x: 95,  y: 38,  mass: 4.5, name: 'THE FORGE',         realm: 2 },
-  { x: 42,  y: 60,  mass: 3.5, name: 'THE CARTOGRAPHY',   realm: 3 },
-  { x: 82,  y: 72,  mass: 4,   name: 'THE NEBULA',        realm: 4 },
-  { x: 28,  y: 90,  mass: 4.5, name: 'THE FREQUENCY',     realm: 5 },
-  { x: 65,  y: 112, mass: 5,   name: 'THE LOOKING GLASS', realm: 6 },
-  { x: 45,  y: 135, mass: 4,   name: 'TRANSCENDENCE',     realm: 7 },
-  { x: 75,  y: 160, mass: 4.5, name: 'ASCENSION',         realm: 8 },
+  { x: 60, y: 8,   mass: 4.5, name: 'THE SINGULARITY',  realm: 0 },
+  { x: 30, y: 22,  mass: 4,   name: 'FIRST LIGHT',      realm: 1 },
+  { x: 84, y: 30,  mass: 3.5, name: 'ACCRETION',        realm: 2 },
+  { x: 50, y: 48,  mass: 4,   name: 'THE RING DIVE',    realm: 3 },
+  { x: 98, y: 58,  mass: 4.5, name: 'GRAVITY ASSIST',   realm: 4 },
+  { x: 26, y: 70,  mass: 4.5, name: 'THE CARTOGRAPHY',  realm: 5 },
+  { x: 70, y: 82,  mass: 3.5, name: 'STELLAR NURSERY',  realm: 6 },
+  { x: 38, y: 100, mass: 4,   name: 'PULSAR',           realm: 7 },
+  { x: 92, y: 108, mass: 4.5, name: 'DYSON SWARM',      realm: 8 },
+  { x: 58, y: 124, mass: 5,   name: 'EVENT HORIZON',    realm: 9 },
+  { x: 30, y: 144, mass: 4,   name: 'TRANSCENDENCE',    realm: 10 },
+  { x: 80, y: 160, mass: 4.5, name: 'ASCENSION',        realm: 11 },
 ]
 
 // Logical canvas size (CSS px). The star map spans ~120×150, so pivot the
@@ -33,7 +36,7 @@ const OFFSET_X = NAV_W / 2 - PIVOT_X
 const OFFSET_Y = NAV_H / 2 - PIVOT_Y
 
 const isLockedRealm = (realm) =>
-  realm >= 7 && !useStore.getState().signalShattered
+  realm >= 10 && !useStore.getState().signalShattered
 
 // Find realm section by data-realm attribute and scroll to it
 function scrollToRealm(realmIndex) {

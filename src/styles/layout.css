@@ -16,42 +16,21 @@
   background: var(--void);
 }
 
-/* Explicit Heights to pre-allocate GSAP Pin Spacers (Prevents premature triggering) */
-/* Realm 2 (The Forge) — 600vh scrub travel */
-.realm-2 {
-  height: calc(100vh + 6000px);
-}
+/* Explicit heights — sticky chapters scroll through their own height.
+   Scenes may mount late without shifting anything below them. */
+.realm-1  { height: 170vh; }   /* First Light */
+.realm-2  { height: 600vh; }   /* Accretion */
+.realm-3  { height: 600vh; }   /* The Ring Dive */
+.realm-4  { height: 800vh; }   /* Gravity Assist */
+.realm-5  { height: 1800vh; }  /* The Cartography (4 worlds) */
+.realm-6  { height: 600vh; }   /* Stellar Nursery */
+.realm-7  { height: 600vh; }   /* Pulsar */
+.realm-8  { height: 600vh; }   /* Dyson Swarm */
+.realm-9  { height: 450vh; }   /* Event Horizon */
+.realm-10 { height: 300vh; }   /* Transcendence */
+.realm-11 { height: 300vh; }   /* Ascension */
 
-/* Realm 3 (The Cartography) — 4 orbital zones × 400vh + 200vh intro/outro */
-.realm-3 {
-  height: 1800vh;
-}
-
-/* Realm 4 (The Nebula) — 600vh: Entry + 5 Morphs + Supernova + Silence */
-.realm-4 {
-  height: 600vh;
-}
-
-/* Realm 5 (The Frequency) — 500vh */
-.realm-5 {
-  height: 500vh;
-}
-
-/* Realm 6 (The Looking Glass) — 400vh scrub travel */
-.realm-6 {
-  height: 400vh;
-}
-
-/* Realm 7 (Transcendence) — 300vh finale travel */
-.realm-7 {
-  height: 300vh;
-}
-
-.realm-8 {
-  height: 300vh;
-}
-
-/* ── Realm 2 (The Forge) — no tunnel, full-screen canvas ── */
+.realm-loader-placeholder { background: transparent !important; }
 
 /* ── Persistent UI ──────────────────────────────────── */
 /* Corner ownership (realm overlays must stay out of these):

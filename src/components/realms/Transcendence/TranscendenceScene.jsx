@@ -1,12 +1,12 @@
 import { useRef, useEffect, useMemo, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 import { useStore } from '../../../store/useStore'
-import { useRealmFrameloop } from '../../../hooks/useRealmActive'
+import VoyageCanvas from '../../../voyage/VoyageCanvas'
 import singularityFrag from '../../../gl/shaders/singularity.frag.glsl?raw'
 import './Transcendence.css'
 
@@ -96,7 +96,6 @@ function TranscendenceParticles() {
 export default function TranscendenceScene() {
   const containerRef = useRef(null)
   const [scrollProgress, setScrollProgress] = useState(0)
-  const frameloop = useRealmFrameloop()
 
   useEffect(() => {
     const el = containerRef.current
@@ -112,16 +111,18 @@ export default function TranscendenceScene() {
         setScrollProgress(self.progress)
       }
     })
-    return () => trigger.kill()
+    // Chapters can mount mid-scroll (remounts, nav jumps): sync right away
+    const syncRaf = requestAnimationFrame(() => { trigger.refresh(); trigger.vars.onUpdate?.(trigger) })
+    return () => { cancelAnimationFrame(syncRaf); trigger.kill() }
   }, [])
 
   return (
     <div className="transcendence-realm" ref={containerRef}>
       <div className="transcendence-canvas-container">
-        <Canvas frameloop={frameloop} dpr={[1, 1.5]}>
+        <VoyageCanvas maxDpr={1.25}>
           <SingularityEffect scrollProgress={scrollProgress} />
           <TranscendenceParticles />
-        </Canvas>
+        </VoyageCanvas>
       </div>
 
       <div className="transcendence-content">

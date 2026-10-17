@@ -10,9 +10,10 @@ export default function LoreTracker() {
   
   // Convert object { patient: true, morse: false, ... } to ordered array for rendering
   const eggs = [
+    // First Light idle word · Pulsar triple-tap · full Dyson shell · loader wait
     { id: 'patient',     label: 'THE FIRST WORD',      found: loreEggs.patient },
     { id: 'morse',       label: 'THE HIDDEN SIGNAL',   found: loreEggs.morse },
-    { id: 'freq-ghost',  label: 'THE ENDLESS FREQ',    found: loreEggs['freq-ghost'] },
+    { id: 'freq-ghost',  label: 'THE CLOSED SHELL',    found: loreEggs['freq-ghost'] },
     { id: 'observer',    label: 'THE OBSERVER',        found: loreEggs.observer },
   ]
   const foundCount = eggs.filter(e => e.found).length

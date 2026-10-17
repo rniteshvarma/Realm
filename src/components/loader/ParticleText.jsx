@@ -1,12 +1,13 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { HAS_WEBGL, MAX_DPR } from '../../utils/deviceTier'
 import * as THREE from 'three'
 import { useStore } from '../../store/useStore'
 
 import vertShader from '../../gl/shaders/particles.vert.glsl?raw'
 import fragShader from '../../gl/shaders/particles.frag.glsl?raw'
 
-function Particles({ text }) {
+function Particles({ text, phase }) {
   const pointsRef = useRef()
   const materialRef = useRef()
   const performanceLow = useStore(state => state.performanceLow)
@@ -88,6 +89,8 @@ function Particles({ text }) {
     uTime: { value: 0 },
     uProgress: { value: 0 }, // 0 = exploded, 1 = assembled text
     uPixelRatio: { value: 1 },
+    uCollapse: { value: 0 }, // 1 = every particle pulled into the singularity
+    uBang: { value: 0 },     // 0→1 = explosion outward
   }), [])
   uniforms.uPixelRatio.value = gl.getPixelRatio()
 
@@ -97,6 +100,12 @@ function Particles({ text }) {
       // Animate progress smoothly towards 1 (frame-rate independent)
       const k = 1 - Math.pow(0.98, delta * 60)
       materialRef.current.uniforms.uProgress.value += (1.0 - materialRef.current.uniforms.uProgress.value) * k
+      if (phase?.current) {
+        const u = materialRef.current.uniforms
+        const kc = 1 - Math.exp(-delta * 2.2)
+        u.uCollapse.value += (phase.current.collapse - u.uCollapse.value) * kc
+        u.uBang.value = phase.current.bang
+      }
     }
   })
 
@@ -141,16 +150,29 @@ function Particles({ text }) {
   )
 }
 
-export default function ParticleTextComponent({ text }) {
+export default function ParticleTextComponent({ text, phase }) {
+  // The name is rasterised once — wait for the webfont so it isn't sampled
+  // in a fallback face (with a timeout so a blocked font never stalls it)
+  const [fontReady, setFontReady] = useState(false)
+  useEffect(() => {
+    let done = false
+    const ready = () => { if (!done) { done = true; setFontReady(true) } }
+    document.fonts?.load('bold 120px "Space Grotesk"').then(ready, ready)
+    const t = setTimeout(ready, 1500)
+    if (!document.fonts) ready()
+    return () => clearTimeout(t)
+  }, [])
+
+  if (!HAS_WEBGL || !fontReady) return null
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: -1, pointerEvents: 'none' }}>
       <Canvas 
         camera={{ position: [0, 0, 15], fov: 45 }} 
         style={{ pointerEvents: 'none' }}
         gl={{ antialias: false }}
-        dpr={useStore.getState().performanceLow ? 1 : Math.min(window.devicePixelRatio, 2)}
+        dpr={Math.min(MAX_DPR, 1.5)}
       >
-        <Particles text={text} />
+        <Particles text={text} phase={phase} />
       </Canvas>
     </div>
   )

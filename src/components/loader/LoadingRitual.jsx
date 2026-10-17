@@ -19,6 +19,19 @@ export default function LoadingRitual() {
   const egg5TimerRef  = useRef(null)
   const egg5FoundRef  = useRef(false)
   const wordmarkShownRef = useRef(false)
+  // Singularity choreography (read by the particle shader every frame)
+  const phaseRef = useRef({ collapse: 0, bang: 0 })
+  const pointRef = useRef(null)
+  const flashRef = useRef(null)
+  const [collapsed, setCollapsed] = useState(false)
+
+  // Dev shortcut: ?skip jumps straight past the ritual
+  useEffect(() => {
+    if (import.meta.env.DEV && new URLSearchParams(location.search).has('skip')) {
+      useStore.getState().setBigBang()
+      setReady()
+    }
+  }, [setReady])
 
   useEffect(() => {
     const tl = gsap.timeline({
@@ -67,6 +80,16 @@ export default function LoadingRitual() {
     )
   }, [showWordmark])
 
+  // The name holds for a beat, then spirals into one burning point
+  useEffect(() => {
+    if (!complete) return
+    const t = setTimeout(() => {
+      phaseRef.current.collapse = 1
+      setCollapsed(true)
+    }, 2600)
+    return () => clearTimeout(t)
+  }, [complete])
+
   // Egg 5 — start 33s idle timer when completion screen shows
   useEffect(() => {
     if (!complete) return
@@ -103,13 +126,27 @@ export default function LoadingRitual() {
     // The overlay unmounts under the pointer without a mouseout — reset the cursor
     useStore.getState().setCursorState('default')
 
+    // ── BIG BANG ──
+    // Everything is pulled into the point, then detonates outward. The
+    // persistent starfield behind the loader takes over the same motion.
+    phaseRef.current.collapse = 1
+    setCollapsed(true)
+    useStore.getState().setBigBang()
+    const tl = gsap.timeline()
+    tl.to(phaseRef.current, { bang: 1, duration: 1.6, ease: 'power2.in' }, 0.15)
+    if (pointRef.current) {
+      tl.to(pointRef.current, { scale: 14, opacity: 0, duration: 0.7, ease: 'expo.out' }, 0.1)
+    }
+    if (flashRef.current) {
+      tl.fromTo(flashRef.current, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: 'power2.out' }, 0.12)
+        .to(flashRef.current, { opacity: 0, duration: 1.1, ease: 'power2.out' }, 0.32)
+    }
     // Fallback in case the tween is interrupted; setReady is idempotent.
-    const fallback = setTimeout(() => setReady(), 1500)
-    gsap.to(containerRef.current, {
-      opacity: 0, scale: 1.1, filter: 'blur(20px)',
-      duration: 1.2, ease: 'power3.inOut',
+    const fallback = setTimeout(() => setReady(), 2200)
+    tl.to(containerRef.current, {
+      backgroundColor: 'rgba(0,0,0,0)', opacity: 0, duration: 1.1, ease: 'power2.inOut',
       onComplete: () => { clearTimeout(fallback); setReady() }
-    })
+    }, 0.55)
   }
 
   const handleKeyDown = (e) => {
@@ -158,10 +195,15 @@ export default function LoadingRitual() {
               </div>
             )}
             <div className="loading-ritual__particles-behind" style={{ pointerEvents: 'none', zIndex: 0 }}>
-              <ParticleText text="NITESH VARMA" />
+              <ParticleText text="NITESH VARMA" phase={phaseRef} />
             </div>
+            <div
+              ref={pointRef}
+              className={`singularity-point ${collapsed ? 'is-on' : ''}`}
+              aria-hidden="true"
+            />
             <span className="loading-ritual__enter" aria-hidden="true">
-              [ CLICK TO INITIATE ]
+              {collapsed ? '[ TOUCH THE SINGULARITY ]' : '[ CLICK TO INITIATE ]'}
             </span>
             <div className="loading-ritual__wordmark wordmark-completion" aria-hidden="true">
               {'REALM'.split('').map((l, i) => (
@@ -173,6 +215,8 @@ export default function LoadingRitual() {
         )}
       </div>
       
+      <div ref={flashRef} className="big-bang-flash" aria-hidden="true" />
+
       <div className="loading-ritual__sound-hint">
         <span className="icon">◈</span>
         <span>SOUND OFF BY DEFAULT</span>

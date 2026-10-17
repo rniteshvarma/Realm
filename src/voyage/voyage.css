@@ -1,0 +1,268 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   THE VOYAGE — shared styles for every new chapter
+   One palette (gold / ice / navy), one type system, one HUD.
+═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ice: #cfe4ff;
+  --navy: #050913;
+  --gold: #C9A84C;
+  --gold-soft: rgba(201, 168, 76, 0.6);
+}
+
+/* ── Persistent backdrop ─────────────────────────────── */
+.universe-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.universe-backdrop canvas { width: 100% !important; height: 100% !important; }
+
+/* Main content floats above the backdrop */
+.experience-container { position: relative; z-index: 1; }
+
+/* ── Mission HUD (bottom-left) ───────────────────────── */
+.mission-hud {
+  position: fixed;
+  left: 2rem;
+  bottom: 1.75rem;
+  z-index: 970;
+  font-family: var(--font-mono);
+  color: rgba(240, 240, 240, 0.55);
+  pointer-events: none;
+  min-width: 170px;
+}
+.mission-hud__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+}
+.mission-hud__index { color: var(--gold); font-size: 0.95rem; letter-spacing: 0.05em; }
+.mission-hud__total { opacity: 0.45; }
+.mission-hud__stamp { margin-left: auto; color: var(--ice); opacity: 0.7; }
+.mission-hud__name {
+  margin-top: 0.35rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.32em;
+  color: rgba(240, 240, 240, 0.8);
+  white-space: nowrap;
+}
+.mission-hud__track {
+  margin-top: 0.6rem;
+  height: 1px;
+  background: rgba(240, 240, 240, 0.12);
+  overflow: hidden;
+}
+.mission-hud__bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), #fff);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+/* ── Sticky chapter scaffold ─────────────────────────── */
+.v-chapter { position: relative; width: 100%; height: 100%; }
+.v-sticky {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;   /* iOS/Android: never taller than the visible area */
+  overflow: hidden;
+}
+.v-canvas { position: absolute; inset: 0; }
+
+/* ── Story beats: the shared text treatment ──────────── */
+.v-beats {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+.v-beat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(1.5rem, 7vw, 7rem);
+  pointer-events: none;
+}
+.v-beat--left   { justify-content: flex-start; }
+.v-beat--right  { justify-content: flex-end; text-align: right; }
+.v-beat--center { justify-content: center; text-align: center; }
+.v-beat--low    { justify-content: center; align-items: flex-end; padding-bottom: 14vh; text-align: center; }
+
+.v-beat__card {
+  position: relative;
+  max-width: min(440px, 80vw);
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo);
+}
+.v-beat--center .v-beat__card { max-width: min(760px, 88vw); }
+.v-beat--low .v-beat__card    { max-width: min(720px, 88vw); }
+.v-beat.is-on .v-beat__card { opacity: 1; transform: none; }
+
+/* Soft focus-pull only on desktop pointers — blur is costly on phones */
+@media (hover: hover) and (pointer: fine) {
+  .v-beat__card {
+    filter: blur(6px);
+    transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo), filter 0.9s var(--ease-out-expo);
+  }
+  .v-beat.is-on .v-beat__card { filter: none; }
+}
+
+/* Soft dark halo so copy stays legible over bright scenes */
+.v-beat__card::before {
+  content: '';
+  position: absolute;
+  inset: -3.5rem -4.5rem;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgba(2, 4, 10, 0.78), rgba(2, 4, 10, 0.45) 55%, transparent);
+  pointer-events: none;
+}
+
+.v-kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.32em;
+  color: var(--gold);
+  margin-bottom: 0.9rem;
+  text-transform: uppercase;
+}
+.v-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 5.2vw, 4.6rem);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  color: #f4f1ea;
+  text-shadow: 0 0 40px rgba(201, 168, 76, 0.18);
+}
+.v-title--xl { font-size: clamp(3rem, 9vw, 8.5rem); letter-spacing: 0.06em; }
+.v-body {
+  margin-top: 1rem;
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(0.95rem, 1.25vw, 1.15rem);
+  line-height: 1.65;
+  color: rgba(240, 240, 240, 0.72);
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.9);
+}
+.v-metric {
+  display: inline-block;
+  margin-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  color: var(--ice);
+  border-top: 1px solid rgba(207, 228, 255, 0.25);
+  padding-top: 0.6rem;
+  text-transform: uppercase;
+  line-height: 1.9;
+}
+
+/* Chapter intro title (centre, fades as you scroll in) */
+.v-intro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  z-index: 9;
+  padding: 0 1.5rem;
+}
+
+/* Scroll cue */
+.v-cue {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  bottom: 2.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.45em;
+  color: rgba(240, 240, 240, 0.45);
+  z-index: 10;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.6s;
+}
+
+@media (max-width: 768px) {
+  .mission-hud { left: 1rem; bottom: 1rem; min-width: 140px; }
+  .mission-hud__name { font-size: 0.55rem; letter-spacing: 0.24em; }
+  .v-beat { padding: 0 1.25rem; }
+  .v-beat--left, .v-beat--right {
+    justify-content: flex-start; align-items: flex-end; padding-bottom: 18vh; text-align: left;
+  }
+  .v-beat--left .v-beat__card, .v-beat--right .v-beat__card { max-width: none; }
+  .v-beat--center .v-beat__card { max-width: 90vw; }
+  /* keep clear of the constellation nav in the bottom-right corner */
+  .v-beat--low { padding-bottom: 22vh; }
+  .v-cue { bottom: 5.5rem; letter-spacing: 0.25em; }
+}
+
+.chapter-fallback {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  color: rgba(240, 240, 240, 0.35);
+}
+
+/* ── No WebGL: a static CSS sky so the story still reads ── */
+html.no-webgl body {
+  background:
+    radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 34%, #cfe4ff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 38% 72%, #ffe7b8 50%, transparent 51%),
+    radial-gradient(1px 1px at 86% 82%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 8%, #fff 50%, transparent 51%),
+    radial-gradient(ellipse at 50% 40%, #0b1430 0%, #000 70%);
+  background-size: 320px 320px, 260px 260px, 410px 410px, 300px 300px, 230px 230px, 100% 100%;
+  background-attachment: fixed;
+}
+
+/* ── Notch / home-indicator safe areas (viewport-fit=cover) ── */
+@supports (padding: max(0px)) {
+  .mission-hud {
+    left: max(2rem, env(safe-area-inset-left));
+    bottom: max(1.75rem, env(safe-area-inset-bottom));
+  }
+  .persistent-ui {
+    top: max(2rem, env(safe-area-inset-top));
+    right: max(2rem, env(safe-area-inset-right));
+  }
+  .constellation-nav {
+    right: max(1.25rem, env(safe-area-inset-right));
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  @media (max-width: 768px) {
+    .mission-hud {
+      left: max(1rem, env(safe-area-inset-left));
+      bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+    .persistent-ui {
+      top: max(1rem, env(safe-area-inset-top));
+      right: max(1rem, env(safe-area-inset-right));
+    }
+    .constellation-nav {
+      right: max(0.5rem, env(safe-area-inset-right));
+      bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+  }
+}
