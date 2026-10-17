@@ -1,4 +1,4 @@
-import{r as c,u as v,j as e,a as d,V as u,b as f}from"./index-DYzImh_6.js";import{V as p}from"./VoyageCanvas-s5Au4dfH.js";import{u as g}from"./useSectionProgress-K0rZfnjC.js";const x=`
+import{r as c,u as v,j as e,a as d,V as u,b as f}from"./index-B9nYBtf5.js";import{V as p}from"./VoyageCanvas-BoNDJoh5.js";import{u as g}from"./useSectionProgress-Sl9-qPiB.js";const x=`
   precision highp float;
   uniform vec2  uRes;
   uniform vec2  uMouse;     // aspect-corrected, centred

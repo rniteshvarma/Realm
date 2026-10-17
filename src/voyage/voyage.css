@@ -266,3 +266,7 @@ html.no-webgl body {
     }
   }
 }
+
+/* Wrapper for the kept final realms: fills its section so the panel inside
+   can be CSS-sticky (no GSAP pin-spacers that fight React on unmount) */
+.realm-chapter { position: relative; width: 100%; height: 100%; }

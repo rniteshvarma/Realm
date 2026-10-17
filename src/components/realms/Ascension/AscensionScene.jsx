@@ -161,6 +161,7 @@ function AscensionEnvironment() {
 }
 
 export default function AscensionScene() {
+  const chapterRef = useRef(null)
   const containerRef = useRef(null)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [showSequence, setShowSequence] = useState(false)
@@ -178,15 +179,13 @@ export default function AscensionScene() {
   ]
 
   useEffect(() => {
-    const el = containerRef.current
+    // No GSAP pin: the panel is CSS-sticky inside a wrapper that fills the
+    // section. Pins re-parent the element into a pin-spacer behind React's
+    // back, which crashes React when the chapter unmounts.
     const trigger = ScrollTrigger.create({
-      trigger: el,
+      trigger: chapterRef.current,
       start: 'top top',
-      // Pin for exactly the room the section reserves (300vh − 100vh).
-      end: () => `+=${el.parentElement.offsetHeight - el.offsetHeight}`,
-      invalidateOnRefresh: true,
-      pin: true,
-      scrub: 1,
+      end: 'bottom bottom',
       onUpdate: (self) => {
         setScrollProgress(self.progress)
       }
@@ -213,6 +212,7 @@ export default function AscensionScene() {
   useEffect(() => () => timersRef.current.forEach(clearTimeout), [])
 
   return (
+    <div className="realm-chapter" ref={chapterRef}>
     <div className={`ascension-realm ${scrollProgress > 0.01 ? 'visible' : ''}`} ref={containerRef}>
       <div className={`white-out-flash ${whiteOut ? 'active' : ''}`} />
       
@@ -252,6 +252,7 @@ export default function AscensionScene() {
            [ INTENTIONALITY ]
         </div>
       </div>
+    </div>
     </div>
   )
 }

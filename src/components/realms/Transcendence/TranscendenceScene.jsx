@@ -94,19 +94,18 @@ function TranscendenceParticles() {
 }
 
 export default function TranscendenceScene() {
+  const chapterRef = useRef(null)
   const containerRef = useRef(null)
   const [scrollProgress, setScrollProgress] = useState(0)
 
   useEffect(() => {
-    const el = containerRef.current
+    // No GSAP pin: the panel is CSS-sticky inside a wrapper that fills the
+    // section. Pins re-parent the element into a pin-spacer behind React's
+    // back, which crashes React when the chapter unmounts.
     const trigger = ScrollTrigger.create({
-      trigger: el,
+      trigger: chapterRef.current,
       start: 'top top',
-      // Pin for exactly the room the section reserves (300vh − 100vh).
-      end: () => `+=${el.parentElement.offsetHeight - el.offsetHeight}`,
-      invalidateOnRefresh: true,
-      pin: true,
-      scrub: 1,
+      end: 'bottom bottom',
       onUpdate: (self) => {
         setScrollProgress(self.progress)
       }
@@ -117,6 +116,7 @@ export default function TranscendenceScene() {
   }, [])
 
   return (
+    <div className="realm-chapter" ref={chapterRef}>
     <div className="transcendence-realm" ref={containerRef}>
       <div className="transcendence-canvas-container">
         <VoyageCanvas maxDpr={1.25}>
@@ -135,6 +135,7 @@ export default function TranscendenceScene() {
       <footer className="trans-footer">
         REALM v2.0 — {new Date().getFullYear()} — END OF TRANSMISSION
       </footer>
+    </div>
     </div>
   )
 }
