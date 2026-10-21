@@ -4,7 +4,7 @@ import heavenEngine from './HeavenAudioEngine'
 // ═══════════════════════════════════════════════════════
 //  AUDIO VISUALIZER — Oscilloscope-style waveform UI
 //  40×20px canvas. Responds to Web Audio AnalyserNode.
-//  Labels: "SIGNAL" (off) / "CHOIR" (on)
+//  Labels: "SOUND OFF" / "SOUND ON"
 // ═══════════════════════════════════════════════════════
 
 export default function AudioVisualizer({ enabled, onToggle }) {
@@ -71,9 +71,15 @@ export default function AudioVisualizer({ enabled, onToggle }) {
   return (
     <button
       className={`audio-visualizer-btn ${enabled ? 'active' : ''}`}
-      onClick={onToggle}
-      title={enabled ? 'CHOIR — click to silence' : 'SIGNAL — click to activate'}
-      aria-label={enabled ? 'Audio on — click to turn off' : 'Audio off — click to turn on'}
+      onClick={() => {
+        // Create/resume the audio context inside the tap itself — iOS Safari
+        // only allows audio to start synchronously within a user gesture
+        if (!enabled) heavenEngine.unlock()
+        onToggle()
+      }}
+      title={enabled ? 'Ambience on — click to mute' : 'Turn on the deep-space ambience'}
+      aria-label={enabled ? 'Sound on — click to turn off' : 'Sound off — click to turn on'}
+      aria-pressed={enabled}
       data-cursor="hover-link"
     >
       <canvas
@@ -83,7 +89,7 @@ export default function AudioVisualizer({ enabled, onToggle }) {
         className="audio-visualizer-canvas"
       />
       <span className="audio-visualizer-label">
-        {enabled ? 'CHOIR' : 'SIGNAL'}
+        {enabled ? 'SOUND ON' : 'SOUND OFF'}
       </span>
     </button>
   )

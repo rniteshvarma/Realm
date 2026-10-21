@@ -191,7 +191,8 @@ canvas {
 }
 
 .audio-visualizer-label {
-  min-width: 32px;
+  min-width: 58px;
+  text-align: left;
 }
 
 /* ── Warp overlay (constellation nav) ──────────────── */

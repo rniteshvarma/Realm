@@ -1,4 +1,4 @@
-import{S as V,C as A,c as o,r as f,j as e,B as G,b as D,D as I,f as F,e as w}from"./index-B9nYBtf5.js";import{V as N}from"./VoyageCanvas-BoNDJoh5.js";import{u as H,d as Y}from"./useSectionProgress-Sl9-qPiB.js";import{s as _,B as K}from"./Beats-LF5kscrI.js";import{A as E,g as W}from"./Accretion-Cn_xvavI.js";import{B as U}from"./Billboard-D1xRVmVy.js";import{T as q}from"./Text-Dp2CTLCG.js";const J=`
+import{S as V,C as A,c as o,r as f,j as e,B as G,b as D,D as I,f as F,e as w}from"./index-EHYa12sO.js";import{V as N}from"./VoyageCanvas-XSA0YfCj.js";import{u as H,d as Y}from"./useSectionProgress-ayEFJUV8.js";import{s as _,B as K}from"./Beats-CzKm5iZ1.js";import{A as E,g as W}from"./Accretion-Bqy7U2KF.js";import{B as U}from"./Billboard-Dy9eO-GB.js";import{T as q}from"./Text-BwKYpmFi.js";const J=`
   varying vec3 vN; varying vec3 vP; varying vec3 vW;
   void main() {
     vN = normalize(normalMatrix * normal);

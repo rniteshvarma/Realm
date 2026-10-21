@@ -1,4 +1,4 @@
-import{r as s,a6 as N,u as b,j as t,K as k,a5 as q,a as U,V as y,b as H,e as M,aq as S}from"./index-B9nYBtf5.js";import{V as W}from"./VoyageCanvas-BoNDJoh5.js";import{d as I}from"./useSectionProgress-Sl9-qPiB.js";const w=[{from:.1,to:.3,text:"YOU’VE SEEN THE WORK."},{from:.3,to:.5,text:"YOU’VE FELT THE THOUGHT."},{from:.5,to:.72,text:"NOW YOU KNOW WHO BUILT THIS."}],R=.9,L=`
+import{r as s,a6 as N,u as b,j as t,K as k,a5 as q,a as U,V as y,b as H,e as M,aq as S}from"./index-EHYa12sO.js";import{V as W}from"./VoyageCanvas-XSA0YfCj.js";import{d as I}from"./useSectionProgress-ayEFJUV8.js";const w=[{from:.1,to:.3,text:"YOU’VE SEEN THE WORK."},{from:.3,to:.5,text:"YOU’VE FELT THE THOUGHT."},{from:.5,to:.72,text:"NOW YOU KNOW WHO BUILT THIS."}],R=.9,L=`
   varying vec2 vUv;
   void main() { vUv = uv; gl_Position = vec4(position, 1.0); }
 `,V=`

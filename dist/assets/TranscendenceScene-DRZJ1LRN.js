@@ -1,4 +1,4 @@
-import{r,a6 as m,j as n,a as v,V as u,b as f,e as d}from"./index-B9nYBtf5.js";import{V as p}from"./VoyageCanvas-BoNDJoh5.js";const g=`// singularity.frag.glsl  v4 — KERR warm palette
+import{r,a6 as m,j as n,a as v,V as u,b as f,e as d}from"./index-EHYa12sO.js";import{V as p}from"./VoyageCanvas-XSA0YfCj.js";const g=`// singularity.frag.glsl  v4 — KERR warm palette
 //
 // Implements BRIEF 10 visual requirements:
 //   • Warm thermal palette: dark red → orange → gold → white-hot

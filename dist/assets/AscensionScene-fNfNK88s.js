@@ -1,4 +1,4 @@
-import{r as t,a6 as E,j as e,b as g,t as N,a1 as I,a5 as S}from"./index-B9nYBtf5.js";import{V as T}from"./VoyageCanvas-BoNDJoh5.js";const M=`precision highp float;
+import{r as t,a6 as E,j as e,b as g,t as N,a1 as I,a5 as S}from"./index-EHYa12sO.js";import{V as T}from"./VoyageCanvas-XSA0YfCj.js";const M=`precision highp float;
 uniform float uTime;
 varying vec2 vUv;
 
