@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { Suspense, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
 import * as THREE from 'three'
@@ -7,6 +7,7 @@ import VoyageCanvas from '../VoyageCanvas'
 import { useSectionProgress, damp } from '../useSectionProgress'
 import Beats, { stepsOf } from '../Beats'
 import { glowTexture } from './Accretion'
+import { LABEL_FONT, LABEL_CHARS } from '../labelFont'
 import { ADDITIVE } from '../blend'
 import '../voyage.css'
 
@@ -231,11 +232,15 @@ function SkillFragments() {
   return items.map((it, i) => (
     <group key={it.name} position={it.pos}>
       <Billboard>
-        <Text ref={(m) => { if (refs.current[i]) refs.current[i].label = m }} fontSize={0.14} color="#f4f1ea"
+        {/* Own Suspense: a label waiting on its font must never hide the scene */}
+        <Suspense fallback={null}>
+        <Text ref={(m) => { if (refs.current[i]) refs.current[i].label = m }} font={LABEL_FONT} characters={LABEL_CHARS}
+          fontSize={0.14} color="#f4f1ea"
           anchorX="center" anchorY="bottom" position={[0, 0.12, 0]}
           letterSpacing={0.12} fillOpacity={0.2} outlineWidth={0.004} outlineColor="#000">
           {it.name.toUpperCase()}
         </Text>
+        </Suspense>
         <sprite ref={(m) => { if (refs.current[i]) refs.current[i].glow = m }} scale={0.5}>
           <spriteMaterial map={glowTexture()} color={BANDS[it.bi].tint} transparent opacity={0.2}
             {...ADDITIVE} depthWrite={false} toneMapped={false} />

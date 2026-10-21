@@ -13,6 +13,7 @@ import LoreTracker from './components/lore/LoreTracker'
 import { RealmActiveContext } from './hooks/useRealmActive'
 import UniverseBackdrop from './voyage/UniverseBackdrop'
 import MissionHUD from './voyage/MissionHUD'
+import { preloadLabelFont } from './voyage/labelFont'
 
 import './styles/layout.css'
 import './voyage/voyage.css'   // after layout.css so voyage rules win ties
@@ -116,11 +117,13 @@ const AscensionScene     = lazy(importAscension)
 // is ready the instant the visitor touches the Singularity.
 importFirstLight()
 importAccretion()
+// …and the 3D label font, so no chapter ever waits on it
+preloadLabelFont()
 
 // ── Realm section ────────────────────────────────────────────────────
 // Section heights are pre-allocated in layout.css, so scenes can mount and
 // unmount freely without shifting anything. A chapter mounts when it comes
-// within ~1.5 viewports and unmounts again once it is more than ~3.5
+// within ~2.5 viewports and unmounts again once it is more than ~4.5
 // viewports away (hysteresis avoids flicker). That keeps only 2–3 WebGL
 // contexts alive at a time — essential on phones, which drop contexts and
 // memory aggressively. While mounted but off screen, canvases pause via
@@ -138,10 +141,10 @@ function RealmSection({ realm, className = '', importFn, children }) {
     }, { rootMargin: '400% 0px' })
     const near = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) setMounted(true)
-    }, { rootMargin: '150% 0px' })
+    }, { rootMargin: '250% 0px' })
     const far = new IntersectionObserver(([e]) => {
       if (!e.isIntersecting) setMounted(false)
-    }, { rootMargin: '350% 0px' })
+    }, { rootMargin: '450% 0px' })
     const live = new IntersectionObserver(([e]) => {
       setActive(e.isIntersecting)
     }, { rootMargin: '25% 0px' })
@@ -196,6 +199,23 @@ function App() {
       gsap.ticker.remove(raf)
       offScroll?.()
     }
+  }, [isLoading])
+
+  // Once the visitor is in, quietly fetch every chapter's code while the
+  // browser is idle — so even a long jump via the constellation nav only
+  // pays for mounting, never for a download.
+  useEffect(() => {
+    if (isLoading) return
+    const all = [importRingDive, importGravityAssist, importCartography, importNursery,
+      importPulsar, importDyson, importEventHorizon, importTranscendence, importAscension]
+    let cancelled = false
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 300))
+    const next = (i) => {
+      if (cancelled || i >= all.length) return
+      idle(() => { all[i]().catch(() => {}).finally(() => next(i + 1)) }, { timeout: 2000 })
+    }
+    const start = setTimeout(() => next(0), 2500)   // after the Big Bang settles
+    return () => { cancelled = true; clearTimeout(start) }
   }, [isLoading])
 
   // Which chapter is on screen (rebuilt when VII/VIII… unlock)

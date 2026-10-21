@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { Suspense, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Billboard, Text } from '@react-three/drei'
 import * as THREE from 'three'
@@ -7,6 +7,7 @@ import { useSectionProgress, damp } from '../useSectionProgress'
 import Beats, { stepsOf } from '../Beats'
 import { glowTexture } from './Accretion'
 import { makePlanetMaterial } from './planetMaterial'
+import { LABEL_FONT, LABEL_CHARS } from '../labelFont'
 import { ADDITIVE } from '../blend'
 import '../voyage.css'
 
@@ -207,12 +208,15 @@ function Route({ progress }) {
                 depthWrite={false} toneMapped={false} />
             </mesh>
           )}
+          <Suspense fallback={null}>
           <Billboard position={[0, w.r + 3.5, 0]}>
-            <Text ref={(m) => (labelRefs.current[k] = m)} fontSize={3.2} color="#f4f1ea" anchorX="center"
+            <Text ref={(m) => (labelRefs.current[k] = m)} font={LABEL_FONT} characters={LABEL_CHARS}
+              fontSize={3.2} color="#f4f1ea" anchorX="center"
               letterSpacing={0.12} fillOpacity={0}>
               {`${w.year}  ${w.name}`}
             </Text>
           </Billboard>
+          </Suspense>
         </group>
       ))}
 

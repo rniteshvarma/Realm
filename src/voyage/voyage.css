@@ -100,19 +100,28 @@
   max-width: min(440px, 80vw);
   opacity: 0;
   transform: translate3d(0, 18px, 0);
-  transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo);
+  /* Outgoing card leaves fast… */
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 .v-beat--center .v-beat__card { max-width: min(760px, 88vw); }
 .v-beat--low .v-beat__card    { max-width: min(720px, 88vw); }
-.v-beat.is-on .v-beat__card { opacity: 1; transform: none; }
+/* …incoming card waits for it, then settles in — no doubled, blurred text */
+.v-beat.is-on .v-beat__card {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.9s var(--ease-out-expo) 0.22s, transform 0.9s var(--ease-out-expo) 0.22s;
+}
 
 /* Soft focus-pull only on desktop pointers — blur is costly on phones */
 @media (hover: hover) and (pointer: fine) {
   .v-beat__card {
     filter: blur(6px);
-    transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo), filter 0.9s var(--ease-out-expo);
+    transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease;
   }
-  .v-beat.is-on .v-beat__card { filter: none; }
+  .v-beat.is-on .v-beat__card {
+    filter: none;
+    transition: opacity 0.9s var(--ease-out-expo) 0.22s, transform 0.9s var(--ease-out-expo) 0.22s, filter 0.9s var(--ease-out-expo) 0.22s;
+  }
 }
 
 /* Soft dark halo so copy stays legible over bright scenes */

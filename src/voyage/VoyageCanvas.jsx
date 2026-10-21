@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { PerformanceMonitor } from '@react-three/drei'
+import { PerformanceMonitor, Preload } from '@react-three/drei'
 import { useRealmFrameloop } from '../hooks/useRealmActive'
 import { HAS_WEBGL, MAX_DPR, IS_LOW } from '../utils/deviceTier'
 
@@ -10,6 +10,7 @@ import { HAS_WEBGL, MAX_DPR, IS_LOW } from '../utils/deviceTier'
 //  • starts at a resolution the device can afford and adapts live: if the
 //    frame rate drops it lowers resolution, if there's headroom it raises
 //    it again (never above the device cap)
+//  • pre-compiles shaders on mount so the first visible frame isn't a stall
 //  • renders nothing when WebGL2 isn't available (the story text still shows)
 //  • survives a lost GPU context (mobile browsers drop them under pressure)
 // ═══════════════════════════════════════════════════════════════════════
@@ -41,6 +42,9 @@ export default function VoyageCanvas({ children, maxDpr = 1.5, minDpr = 0.6, gl,
         onIncline={() => setDpr((d) => Math.min(cap, +(d * 1.1).toFixed(2)))}
       />
       {children}
+      {/* Compile every shader/texture as soon as the chapter mounts (while
+          it's still ~2 screens away) instead of on its first visible frame */}
+      <Preload all />
     </Canvas>
   )
 }

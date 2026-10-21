@@ -2,9 +2,10 @@
 //  OrbSystem — A single project planet with moons + glow
 // ═══════════════════════════════════════════════════════
 
-import { useRef, useMemo, useEffect } from 'react'
+import { useRef, useMemo, useEffect, Suspense } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
+import { LABEL_FONT, LABEL_CHARS } from '../../../voyage/labelFont'
 import * as THREE from 'three'
 
 import orbSharedVert     from '../../../gl/shaders/orbShared.vert.glsl?raw'
@@ -215,7 +216,10 @@ export default function OrbSystem({
 
       {/* Title label — fades in on close approach */}
       {(phase === 'approach' && phaseProgress > 0.6) || phase === 'orbit'  ? (
+        <Suspense fallback={null}>
         <Text
+          font={LABEL_FONT}
+          characters={LABEL_CHARS}
           position={[0, project.orbRadius + 0.4, 0]}
           fontSize={0.18}
           color="#C9A84C"
@@ -225,6 +229,7 @@ export default function OrbSystem({
         >
           {project.title}
         </Text>
+        </Suspense>
       ) : null}
     </group>
   )
